@@ -1,3 +1,4 @@
+
 import io
 import re
 from datetime import date, datetime, timedelta
@@ -6,9 +7,8 @@ import pandas as pd
 import streamlit as st
 from supabase import create_client
 
-
 # =========================================================
-# 1. CONFIGURACIÓN
+# CONFIGURACIÓN
 # =========================================================
 
 st.set_page_config(
@@ -18,526 +18,704 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-VERSION = "4.0.0"
+VERSION = "5.0.0"
 
-st.markdown(
-    """
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
+# =========================================================
+# DISEÑO VISUAL
+# =========================================================
 
-    :root {
-        --madera: #795438;
-        --madera-oscura: #4A3425;
-        --madera-clara: #A9825B;
-        --crema: #FAF6EE;
-        --beige: #EDE0CC;
-        --texto: #35271E;
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
+
+:root {
+    --fondo: #F7F4EF;
+    --blanco: #FFFFFF;
+    --cafe: #5A3928;
+    --cafe-oscuro: #38251C;
+    --terracota: #B87552;
+    --arena: #E9D9C6;
+    --texto: #382D26;
+    --suave: #8C8178;
+    --verde: #547A61;
+    --borde: #EAE3DA;
+}
+
+html, body, [class*="css"] {
+    font-family: 'DM Sans', sans-serif;
+}
+
+.stApp {
+    background: var(--fondo);
+    color: var(--texto);
+}
+
+[data-testid="stHeader"] {
+    background: rgba(247,244,239,0.95);
+}
+
+[data-testid="stSidebar"] {
+    background: var(--cafe-oscuro);
+    border-right: none;
+}
+
+[data-testid="stSidebar"] > div:first-child {
+    padding-top: 1.4rem;
+}
+
+[data-testid="stSidebar"] * {
+    color: #F8F0E7;
+}
+
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {
+    color: #D9C7B7;
+}
+
+[data-testid="stSidebar"] hr {
+    border-color: #665044;
+}
+
+[data-testid="stSidebar"] [role="radiogroup"] {
+    gap: 7px;
+}
+
+[data-testid="stSidebar"] [role="radiogroup"] label {
+    border-radius: 10px;
+    padding: 9px 11px;
+    transition: background .2s ease;
+}
+
+[data-testid="stSidebar"] [role="radiogroup"] label:hover {
+    background: #674735;
+}
+
+h1, h2, h3 {
+    color: var(--cafe-oscuro);
+    font-family: 'Playfair Display', Georgia, serif;
+}
+
+h1 {
+    font-size: 2.15rem !important;
+    letter-spacing: -.5px;
+}
+
+h2 {
+    font-size: 1.55rem !important;
+}
+
+h3 {
+    font-size: 1.2rem !important;
+}
+
+.block-container {
+    max-width: 1500px;
+    padding-top: 2rem;
+    padding-bottom: 3rem;
+}
+
+.marca {
+    background: linear-gradient(115deg, #38251C 0%, #684832 60%, #9D6D4B 100%);
+    border-radius: 20px;
+    padding: 25px 30px;
+    margin-bottom: 25px;
+    color: #FFF8F0;
+    box-shadow: 0 8px 24px rgba(56,37,28,.12);
+    position: relative;
+    overflow: hidden;
+}
+
+.marca:after {
+    content: "✦";
+    position: absolute;
+    right: 34px;
+    top: -28px;
+    font-size: 130px;
+    color: rgba(255,255,255,.07);
+}
+
+.marca h1 {
+    color: #FFF8F0 !important;
+    font-size: 2rem !important;
+    margin: 0 0 5px 0;
+}
+
+.marca p {
+    color: #E8D7C7 !important;
+    margin: 0;
+    font-size: .95rem;
+}
+
+.etiqueta {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 30px;
+    background: rgba(255,255,255,.13);
+    color: #FFF8F0;
+    font-size: .75rem;
+    margin-bottom: 12px;
+    letter-spacing: .5px;
+}
+
+.tarjeta {
+    background: #FFFFFF;
+    border: 1px solid var(--borde);
+    border-radius: 17px;
+    padding: 20px;
+    min-height: 140px;
+    box-shadow: 0 3px 12px rgba(56,37,28,.035);
+}
+
+.tarjeta .icono {
+    font-size: 1.5rem;
+    margin-bottom: 12px;
+}
+
+.tarjeta .titulo {
+    font-size: .85rem;
+    color: var(--suave);
+    margin-bottom: 7px;
+    font-weight: 600;
+}
+
+.tarjeta .valor {
+    color: var(--cafe-oscuro);
+    font-size: 1.8rem;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.tarjeta .detalle {
+    color: var(--suave);
+    font-size: .78rem;
+    margin-top: 7px;
+}
+
+.panel {
+    background: #FFFFFF;
+    border: 1px solid var(--borde);
+    border-radius: 17px;
+    padding: 22px;
+    box-shadow: 0 3px 12px rgba(56,37,28,.035);
+}
+
+.panel-titulo {
+    font-family: 'Playfair Display', Georgia, serif;
+    color: var(--cafe-oscuro);
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.panel-subtitulo {
+    color: var(--suave);
+    font-size: .84rem;
+    margin-bottom: 17px;
+}
+
+div[data-testid="stMetric"] {
+    background: white;
+    border: 1px solid var(--borde);
+    border-radius: 16px;
+    padding: 18px 20px;
+    box-shadow: 0 3px 12px rgba(56,37,28,.035);
+}
+
+[data-testid="stMetricLabel"] {
+    color: var(--suave);
+    font-weight: 600;
+}
+
+[data-testid="stMetricValue"] {
+    color: var(--cafe-oscuro);
+    font-weight: 700;
+}
+
+[data-testid="stMetricDelta"] {
+    font-size: .8rem;
+}
+
+div.stButton > button,
+div.stDownloadButton > button {
+    border-radius: 10px;
+    min-height: 42px;
+    font-weight: 600;
+    border-color: var(--borde);
+    transition: all .2s ease;
+}
+
+div.stButton > button[kind="primary"],
+div.stFormSubmitButton > button[kind="primary"] {
+    background: var(--cafe);
+    color: white;
+    border-color: var(--cafe);
+}
+
+div.stButton > button:hover,
+div.stDownloadButton > button:hover {
+    border-color: var(--terracota);
+    color: var(--terracota);
+}
+
+div.stButton > button[kind="primary"]:hover {
+    background: var(--cafe-oscuro);
+    color: white;
+}
+
+div[data-testid="stForm"] {
+    background: white;
+    border: 1px solid var(--borde);
+    border-radius: 16px;
+    padding: 22px;
+}
+
+div[data-testid="stDataFrame"] {
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+[data-testid="stTextInput"] input,
+[data-testid="stNumberInput"] input,
+[data-testid="stDateInput"] input,
+[data-testid="stTextArea"] textarea {
+    border-radius: 9px;
+}
+
+[data-testid="stSelectbox"] > div > div {
+    border-radius: 9px;
+}
+
+hr {
+    border-color: var(--borde);
+}
+
+.stAlert {
+    border-radius: 12px;
+}
+
+a {
+    color: var(--terracota);
+}
+
+@media (max-width: 768px) {
+    .block-container {
+        padding: 1rem .8rem 2rem .8rem;
     }
-
-    .stApp {
-        background: #FAF6EE;
-        color: #35271E;
-        font-family: 'DM Sans', sans-serif;
-    }
-
-    [data-testid="stSidebar"] {
-        background: #4A3425;
-    }
-
-    [data-testid="stSidebar"] * {
-        color: #FFF8ED !important;
-    }
-
-    h1, h2, h3 {
-        color: #4A3425;
-        font-family: 'Playfair Display', serif;
-    }
-
-    [data-testid="stMetric"] {
-        background: #FFFFFF;
-        border: 1px solid #E5D3BC;
-        border-radius: 16px;
-        padding: 18px;
-        box-shadow: 0 3px 12px rgba(74, 52, 37, .06);
-    }
-
-    [data-testid="stMetricLabel"] {
-        color: #795438;
-    }
-
     .marca {
-        background: linear-gradient(135deg, #4A3425, #8D6644);
-        color: #FFF8ED;
-        padding: 25px;
-        border-radius: 18px;
-        margin-bottom: 20px;
-    }
-
-    .marca h1 {
-        color: #FFF8ED;
-        margin-bottom: 5px;
-    }
-
-    .marca p {
-        color: #F4E5D0;
-        margin-bottom: 0;
-    }
-
-    div.stButton > button,
-    div.stDownloadButton > button {
-        border-radius: 10px;
-        font-weight: 600;
-    }
-
-    div.stButton > button[kind="primary"] {
-        background: #795438;
-        border-color: #795438;
-        color: white;
-    }
-
-    div[data-testid="stForm"] {
-        background: white;
-        border: 1px solid #E5D3BC;
-        border-radius: 15px;
         padding: 20px;
+        border-radius: 15px;
     }
-
-    [data-testid="stDataFrame"] {
-        border: 1px solid #E5D3BC;
-        border-radius: 10px;
-        overflow: hidden;
+    .marca h1 {
+        font-size: 1.65rem !important;
     }
-
-    .nota {
-        color: #795438;
-        font-size: 0.9rem;
+    .tarjeta {
+        padding: 14px;
+        min-height: 125px;
     }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
+    .tarjeta .valor {
+        font-size: 1.4rem;
+    }
+}
+</style>
+""", unsafe_allow_html=True)
 
 
 # =========================================================
-# 2. CONEXIÓN A SUPABASE
+# CONEXIÓN
 # =========================================================
 
-def obtener_secreto(nombre, predeterminado=""):
+def secreto(nombre, defecto=""):
     try:
-        return st.secrets.get(nombre, predeterminado)
+        return str(st.secrets.get(nombre, defecto)).strip()
     except Exception:
-        return predeterminado
+        return defecto
 
 
-SUPABASE_URL = str(obtener_secreto("SUPABASE_URL", "")).strip()
-SUPABASE_KEY = str(obtener_secreto("SUPABASE_KEY", "")).strip()
-APP_PASSWORD = str(obtener_secreto("APP_PASSWORD", "")).strip()
+URL = secreto("SUPABASE_URL")
+KEY = secreto("SUPABASE_KEY")
+PASSWORD = secreto("APP_PASSWORD")
 
-
-def validar_conexion():
-    if not SUPABASE_URL or not SUPABASE_KEY:
-        st.error(
-            "Falta configurar SUPABASE_URL o SUPABASE_KEY "
-            "en los secretos de Streamlit."
-        )
-        st.info(
-            "En Streamlit Cloud, abre tu aplicación, entra en Settings "
-            "y luego en Secrets."
-        )
-        st.stop()
-
-    if not SUPABASE_URL.startswith("https://"):
-        st.error("La URL de Supabase debe comenzar con https://.")
-        st.stop()
-
-    if ".supabase.co" not in SUPABASE_URL:
-        st.error("Revisa la URL de tu proyecto de Supabase.")
-        st.stop()
-
-
-validar_conexion()
+if not URL or not KEY:
+    st.error("Falta SUPABASE_URL o SUPABASE_KEY en los secretos de Streamlit.")
+    st.stop()
 
 try:
-    supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-except Exception as error:
-    st.error(f"No se pudo iniciar la conexión: {error}")
+    db = create_client(URL, KEY)
+except Exception as e:
+    st.error(f"No se pudo conectar con Supabase: {e}")
     st.stop()
 
 
 # =========================================================
-# 3. FUNCIONES GENERALES
+# FUNCIONES
 # =========================================================
 
-def mensaje_error(error, operacion="la operación"):
-    st.error(
-        f"No se pudo completar {operacion}. "
-        "Revisa la conexión y los permisos de Supabase."
-    )
-    with st.expander("Ver información técnica"):
-        st.code(str(error))
+def error_ui(e, accion):
+    st.error(f"No se pudo {accion}. Comprueba la conexión y los permisos.")
+    with st.expander("Detalles técnicos"):
+        st.code(str(e))
 
 
-def leer_tabla(tabla, columnas="*"):
-    """Lee una tabla por páginas para no limitarse a 1000 filas."""
-    resultados = []
+def leer(tabla, columnas="*"):
+    resultado = []
     inicio = 0
-    tamano = 1000
 
     while True:
         respuesta = (
-            supabase.table(tabla)
+            db.table(tabla)
             .select(columnas)
-            .range(inicio, inicio + tamano - 1)
+            .range(inicio, inicio + 999)
             .execute()
         )
-
         filas = respuesta.data or []
-        resultados.extend(filas)
+        resultado.extend(filas)
 
-        if len(filas) < tamano:
+        if len(filas) < 1000:
             break
 
-        inicio += tamano
+        inicio += 1000
 
-    return resultados
+    return resultado
 
 
 def registrar_evento(operacion, detalle="", nivel="INFO"):
     try:
-        supabase.table("registro_sistema").insert({
+        db.table("registro_sistema").insert({
             "fecha": datetime.now().isoformat(timespec="seconds"),
-            "nivel": str(nivel)[:30],
-            "operacion": str(operacion)[:100],
+            "nivel": nivel,
+            "operacion": operacion,
             "detalle": str(detalle)[:2000],
         }).execute()
     except Exception:
-        # Un fallo del registro no debe bloquear un pedido.
         pass
 
 
 def dinero(valor):
     try:
         return f"S/ {float(valor or 0):,.2f}"
-    except (TypeError, ValueError):
+    except (ValueError, TypeError):
         return "S/ 0.00"
 
 
-def fecha_segura(valor):
-    if not valor:
-        return None
+def limpio(valor):
+    return re.sub(r"\s+", " ", str(valor or "")).strip()
 
+
+def fecha_segura(valor):
     try:
         return pd.to_datetime(valor, errors="coerce").date()
     except Exception:
         return None
 
 
-def normalizar_nombre(valor):
-    return re.sub(r"\s+", " ", str(valor or "")).strip()
+def direccion_y_notas(texto):
+    direccion = ""
+    notas = []
+
+    for linea in str(texto or "").splitlines():
+        m = re.match(r"^\s*Dirección:\s*(.*)$", linea, re.I)
+        if m and not direccion:
+            direccion = m.group(1).strip()
+        else:
+            notas.append(linea)
+
+    return direccion, "\n".join(notas).strip()
 
 
-def observaciones_con_direccion(direccion, observaciones):
-    direccion = normalizar_nombre(direccion)
-    observaciones = str(observaciones or "").strip()
-
-    # Evita duplicar la dirección si se está editando un pedido antiguo.
-    observaciones = re.sub(
+def observaciones_finales(direccion, notas):
+    direccion = limpio(direccion)
+    notas = str(notas or "").strip()
+    notas = re.sub(
         r"(?im)^\s*Dirección:\s*.*(?:\n|$)",
         "",
-        observaciones,
+        notas,
     ).strip()
 
-    if direccion:
-        return f"Dirección: {direccion}\n{observaciones}".strip()
-
-    return observaciones
+    return (f"Dirección: {direccion}\n{notas}".strip()
+            if direccion else notas)
 
 
-def separar_direccion(observaciones):
-    texto = str(observaciones or "")
-    direccion = ""
-
-    lineas = texto.splitlines()
-    restantes = []
-
-    for linea in lineas:
-        coincidencia = re.match(
-            r"^\s*Dirección:\s*(.*)$",
-            linea,
-            flags=re.IGNORECASE,
-        )
-
-        if coincidencia and not direccion:
-            direccion = coincidencia.group(1).strip()
-        else:
-            restantes.append(linea)
-
-    return direccion, "\n".join(restantes).strip()
+@st.cache_data(ttl=20, show_spinner=False)
+def pedidos_cargar():
+    datos = leer("pedidos")
+    return sorted(datos, key=lambda x: str(x.get("fecha") or ""), reverse=True)
 
 
-def a_dataframe(datos):
-    return pd.DataFrame(datos) if datos else pd.DataFrame()
+@st.cache_data(ttl=20, show_spinner=False)
+def detalles_cargar():
+    return leer("detalle_pedido")
 
 
-def descargar_excel(datos, nombre_hoja="Datos"):
-    """Genera un archivo Excel en memoria."""
-    salida = io.BytesIO()
-
-    with pd.ExcelWriter(salida, engine="openpyxl") as escritor:
-        df = pd.DataFrame(datos)
-
-        if df.empty:
-            df = pd.DataFrame({"Mensaje": ["Sin datos"]})
-
-        df.to_excel(
-            escritor,
-            index=False,
-            sheet_name=nombre_hoja[:31],
-        )
-
-    salida.seek(0)
-    return salida.getvalue()
+@st.cache_data(ttl=30, show_spinner=False)
+def empresas_cargar():
+    return leer("empresas")
 
 
-def exportaciones(datos, prefijo):
-    df = pd.DataFrame(datos)
+@st.cache_data(ttl=30, show_spinner=False)
+def catalogo_cargar():
+    return leer("catalogo_platos")
 
-    if df.empty:
+
+def refrescar():
+    pedidos_cargar.clear()
+    detalles_cargar.clear()
+    empresas_cargar.clear()
+    catalogo_cargar.clear()
+
+
+def exportar(datos, nombre):
+    if not datos:
         st.info("No hay datos para exportar.")
         return
 
-    izquierda, derecha = st.columns(2)
+    df = pd.DataFrame(datos)
+    izq, der = st.columns(2)
 
-    with izquierda:
+    with izq:
         st.download_button(
             "📄 Descargar CSV",
-            data=df.to_csv(index=False).encode("utf-8-sig"),
-            file_name=f"{prefijo}_{date.today().isoformat()}.csv",
+            df.to_csv(index=False).encode("utf-8-sig"),
+            file_name=f"{nombre}_{date.today().isoformat()}.csv",
             mime="text/csv",
             use_container_width=True,
         )
 
-    with derecha:
+    with der:
         try:
-            archivo = descargar_excel(datos, prefijo[:31])
+            buffer = io.BytesIO()
+            with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
+                df.to_excel(writer, index=False, sheet_name="Datos")
+
             st.download_button(
                 "📊 Descargar Excel",
-                data=archivo,
-                file_name=f"{prefijo}_{date.today().isoformat()}.xlsx",
-                mime=(
-                    "application/vnd.openxmlformats-officedocument."
-                    "spreadsheetml.sheet"
-                ),
+                buffer.getvalue(),
+                file_name=f"{nombre}_{date.today().isoformat()}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 use_container_width=True,
             )
         except Exception:
-            st.warning(
-                "Para exportar a Excel, agrega openpyxl a requirements.txt."
-            )
+            st.caption("Para Excel, instala openpyxl en requirements.txt.")
 
 
-# =========================================================
-# 4. CARGA DE DATOS
-# =========================================================
-
-@st.cache_data(ttl=20, show_spinner=False)
-def cargar_pedidos():
-    filas = leer_tabla("pedidos")
-
-    for fila in filas:
-        fila.setdefault("cliente", "")
-        fila.setdefault("empresa", "")
-        fila.setdefault("precio_menu", 0)
-        fila.setdefault("cantidad_menus", 0)
-        fila.setdefault("total", 0)
-        fila.setdefault("observaciones", "")
-
-    filas.sort(
-        key=lambda fila: str(fila.get("fecha") or ""),
-        reverse=True,
-    )
-
-    return filas
-
-
-@st.cache_data(ttl=20, show_spinner=False)
-def cargar_detalles():
-    return leer_tabla("detalle_pedido")
-
-
-@st.cache_data(ttl=30, show_spinner=False)
-def cargar_empresas():
-    return leer_tabla("empresas")
-
-
-@st.cache_data(ttl=30, show_spinner=False)
-def cargar_catalogo():
-    return leer_tabla("catalogo_platos")
-
-
-def refrescar_datos():
-    cargar_pedidos.clear()
-    cargar_detalles.clear()
-    cargar_empresas.clear()
-    cargar_catalogo.clear()
-
-
-def detalle_de_pedido(pedido_id, todos=None):
-    if todos is None:
-        todos = cargar_detalles()
-
-    return [
-        detalle for detalle in todos
-        if str(detalle.get("pedido_id")) == str(pedido_id)
-    ]
-
-
-def nombre_empresa_activa(empresa):
-    nombre = normalizar_nombre(empresa)
-    if not nombre:
-        return ""
-
-    return nombre
-
-
-# =========================================================
-# 5. ACCESO
-# =========================================================
-
-if "autenticado" not in st.session_state:
-    st.session_state.autenticado = not bool(APP_PASSWORD)
-
-if APP_PASSWORD and not st.session_state.autenticado:
+def banner(titulo, subtitulo):
     st.markdown(
-        """
-        <div class="marca">
-            <h1>🍗 Como en Casa Dely</h1>
-            <p>Administración de pedidos y ventas</p>
-        </div>
-        """,
+        f'<div class="marca"><div class="etiqueta">COMO EN CASA DELY · ADMINISTRACIÓN</div>'
+        f'<h1>{titulo}</h1><p>{subtitulo}</p></div>',
         unsafe_allow_html=True,
     )
 
-    with st.form("form_acceso"):
+
+def tarjeta(icono, titulo, valor, detalle=""):
+    st.markdown(
+        f'<div class="tarjeta"><div class="icono">{icono}</div>'
+        f'<div class="titulo">{titulo}</div>'
+        f'<div class="valor">{valor}</div>'
+        f'<div class="detalle">{detalle}</div></div>',
+        unsafe_allow_html=True,
+    )
+
+
+def panel_titulo(titulo, subtitulo=""):
+    st.markdown(
+        f'<div class="panel-titulo">{titulo}</div>'
+        f'<div class="panel-subtitulo">{subtitulo}</div>',
+        unsafe_allow_html=True,
+    )
+
+
+# =========================================================
+# ACCESO
+# =========================================================
+
+if "autenticado" not in st.session_state:
+    st.session_state.autenticado = not bool(PASSWORD)
+
+if PASSWORD and not st.session_state.autenticado:
+    banner("Bienvenido", "Ingresa para administrar tus pedidos y ventas.")
+
+    with st.form("acceso"):
         clave = st.text_input("Contraseña", type="password")
-        entrar = st.form_submit_button(
-            "Ingresar",
-            type="primary",
-            use_container_width=True,
-        )
+        entrar = st.form_submit_button("Ingresar", type="primary")
 
     if entrar:
-        if clave == APP_PASSWORD:
+        if clave == PASSWORD:
             st.session_state.autenticado = True
             st.rerun()
         else:
-            st.error("La contraseña no es correcta.")
+            st.error("Contraseña incorrecta.")
 
     st.stop()
 
 
 # =========================================================
-# 6. ENCABEZADO Y NAVEGACIÓN
+# NAVEGACIÓN
 # =========================================================
 
 with st.sidebar:
-    st.markdown("## 🍗 Como en Casa Dely")
-    st.caption(f"Panel administrativo · v{VERSION}")
+    st.markdown(
+        "<div style='font-size:2rem'>🍗</div>"
+        "<div style='font-family:Playfair Display,serif;font-size:1.3rem;"
+        "font-weight:700;color:#FFF8F0'>Como en Casa Dely</div>"
+        "<div style='font-size:.78rem;color:#D9C7B7'>Panel de administración</div>",
+        unsafe_allow_html=True,
+    )
     st.divider()
+
+    paginas = [
+        "Inicio",
+        "Registrar pedido",
+        "Pedidos",
+        "Estadísticas",
+        "Empresas",
+        "Catálogo",
+        "Sistema",
+    ]
 
     pagina = st.radio(
-        "MENÚ PRINCIPAL",
-        [
-            "Inicio",
-            "Registrar pedido",
-            "Pedidos",
-            "Estadísticas",
-            "Empresas",
-            "Catálogo",
-            "Sistema",
-        ],
+        "NAVEGACIÓN",
+        paginas,
+        index=paginas.index(st.session_state.get("pagina", "Inicio")),
         label_visibility="collapsed",
     )
+    st.session_state.pagina = pagina
 
     st.divider()
+    st.caption("GESTIÓN DEL NEGOCIO")
+    st.caption(f"Versión {VERSION}")
 
-    if st.button("🔄 Actualizar datos", use_container_width=True):
-        refrescar_datos()
+    if st.button("↻ Actualizar datos", use_container_width=True):
+        refrescar()
         st.rerun()
 
-    if APP_PASSWORD and st.button(
-        "🔒 Cerrar sesión",
-        use_container_width=True,
-    ):
+    if PASSWORD and st.button("Cerrar sesión", use_container_width=True):
         st.session_state.autenticado = False
         st.rerun()
 
-st.markdown(
-    """
-    <div class="marca">
-        <h1>Como en Casa Dely</h1>
-        <p>Gestión de pedidos, empresas y ventas en un solo lugar.</p>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-
 
 # =========================================================
-# 7. INICIO
+# INICIO / DASHBOARD
 # =========================================================
 
 if pagina == "Inicio":
-    st.title("Resumen del negocio")
+    banner(
+        "Resumen de tu negocio",
+        "Todo lo importante de Como en Casa Dely, de un vistazo.",
+    )
 
     try:
-        pedidos = cargar_pedidos()
+        pedidos = pedidos_cargar()
+        empresas = empresas_cargar()
+
         hoy = date.today()
+        mes_actual = hoy.month
+        anio_actual = hoy.year
 
         pedidos_hoy = [
+            p for p in pedidos if fecha_segura(p.get("fecha")) == hoy
+        ]
+
+        pedidos_mes = [
             p for p in pedidos
-            if fecha_segura(p.get("fecha")) == hoy
+            if fecha_segura(p.get("fecha"))
+            and fecha_segura(p.get("fecha")).month == mes_actual
+            and fecha_segura(p.get("fecha")).year == anio_actual
         ]
 
-        venta_hoy = sum(
-            float(p.get("total") or 0)
-            for p in pedidos_hoy
-        )
+        venta_hoy = sum(float(p.get("total") or 0) for p in pedidos_hoy)
+        venta_mes = sum(float(p.get("total") or 0) for p in pedidos_mes)
+        menus_hoy = sum(int(p.get("cantidad_menus") or 0) for p in pedidos_hoy)
+        activas = sum(1 for e in empresas if e.get("activo", True))
 
-        menus_hoy = sum(
-            int(p.get("cantidad_menus") or 0)
-            for p in pedidos_hoy
-        )
+        st.markdown("### ✨ Hoy en tu negocio")
+        a, b, c, d = st.columns(4)
 
-        empresas = cargar_empresas()
-        empresas_activas = [
-            e for e in empresas
-            if e.get("activo", True)
-        ]
+        with a:
+            tarjeta("💰", "VENTAS DE HOY", dinero(venta_hoy),
+                    f"{len(pedidos_hoy)} pedidos registrados")
+        with b:
+            tarjeta("🍱", "MENÚS VENDIDOS", f"{menus_hoy:,}",
+                    "Unidades de hoy")
+        with c:
+            tarjeta("📈", "VENTAS DEL MES", dinero(venta_mes),
+                    hoy.strftime("%B %Y").capitalize())
+        with d:
+            tarjeta("🏢", "EMPRESAS ACTIVAS", str(activas),
+                    "Clientes empresariales")
 
-        c1, c2, c3, c4 = st.columns(4)
+        st.write("")
+        izquierda, derecha = st.columns([1.6, 1])
 
-        c1.metric("Ventas de hoy", dinero(venta_hoy))
-        c2.metric("Pedidos de hoy", len(pedidos_hoy))
-        c3.metric("Menús vendidos hoy", menus_hoy)
-        c4.metric("Empresas activas", len(empresas_activas))
+        with izquierda:
+            st.markdown('<div class="panel">', unsafe_allow_html=True)
+            panel_titulo("📊 Evolución de ventas", "Ingresos diarios de los últimos 14 días")
 
-        st.subheader("Pedidos recientes")
+            desde = hoy - timedelta(days=13)
+            por_dia = {}
 
-        recientes = pedidos[:10]
+            for p in pedidos:
+                f = fecha_segura(p.get("fecha"))
+                if f and desde <= f <= hoy:
+                    clave = f.strftime("%d %b")
+                    por_dia[clave] = por_dia.get(clave, 0) + float(p.get("total") or 0)
 
-        if recientes:
-            filas = []
+            fechas = [desde + timedelta(days=i) for i in range(14)]
+            datos_grafico = []
 
-            for p in recientes:
-                direccion, notas = separar_direccion(
-                    p.get("observaciones", "")
+            for f in fechas:
+                clave = f.strftime("%d %b")
+                datos_grafico.append({
+                    "Día": clave,
+                    "Ventas": por_dia.get(clave, 0),
+                })
+
+            st.line_chart(
+                pd.DataFrame(datos_grafico).set_index("Día"),
+                use_container_width=True,
+            )
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        with derecha:
+            st.markdown('<div class="panel">', unsafe_allow_html=True)
+            panel_titulo("🏆 Empresas principales", "Según las ventas de este mes")
+
+            ventas_empresa = {}
+            for p in pedidos_mes:
+                nombre = limpio(p.get("empresa")) or "Sin empresa"
+                ventas_empresa[nombre] = (
+                    ventas_empresa.get(nombre, 0) + float(p.get("total") or 0)
                 )
 
+            top = sorted(
+                ventas_empresa.items(),
+                key=lambda x: x[1],
+                reverse=True,
+            )[:5]
+
+            if top:
+                for i, (nombre, valor) in enumerate(top, 1):
+                    st.markdown(
+                        f"**{i}. {nombre}**  \n"
+                        f"<span style='color:#B87552;font-size:1.1rem;font-weight:700'>"
+                        f"{dinero(valor)}</span>",
+                        unsafe_allow_html=True,
+                    )
+                    st.divider()
+            else:
+                st.info("Todavía no hay ventas este mes.")
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        st.write("")
+        st.markdown('<div class="panel">', unsafe_allow_html=True)
+        panel_titulo("🧾 Pedidos recientes", "Los últimos movimientos de tu negocio")
+
+        if pedidos:
+            filas = []
+            for p in pedidos[:8]:
                 filas.append({
+                    "N.º": p.get("id", ""),
                     "Fecha": p.get("fecha", ""),
                     "Cliente": p.get("cliente", ""),
-                    "Empresa": p.get("empresa", ""),
+                    "Empresa": p.get("empresa", "") or "Particular",
                     "Menús": p.get("cantidad_menus", 0),
                     "Total": dinero(p.get("total", 0)),
                 })
@@ -548,171 +726,97 @@ if pagina == "Inicio":
                 hide_index=True,
             )
         else:
-            st.info("Todavía no hay pedidos registrados.")
+            st.info("Tu actividad aparecerá aquí cuando registres el primer pedido.")
 
-        st.subheader("Accesos rápidos")
-        a, b, c = st.columns(3)
+        st.markdown('</div>', unsafe_allow_html=True)
 
-        with a:
-            if st.button("➕ Registrar pedido", use_container_width=True):
-                st.session_state.pagina_rapida = "Registrar pedido"
+        st.write("")
+        st.markdown("### ⚡ Accesos rápidos")
+        x, y, z = st.columns(3)
+
+        with x:
+            if st.button("＋ Registrar pedido", use_container_width=True):
+                st.session_state.pagina = "Registrar pedido"
+                st.rerun()
+        with y:
+            if st.button("▦ Ver todos los pedidos", use_container_width=True):
+                st.session_state.pagina = "Pedidos"
+                st.rerun()
+        with z:
+            if st.button("＋ Agregar empresa", use_container_width=True):
+                st.session_state.pagina = "Empresas"
                 st.rerun()
 
-        with b:
-            if st.button("🏢 Gestionar empresas", use_container_width=True):
-                st.session_state.pagina_rapida = "Empresas"
-                st.rerun()
-
-        with c:
-            if st.button("📊 Ver estadísticas", use_container_width=True):
-                st.session_state.pagina_rapida = "Estadísticas"
-                st.rerun()
-
-    except Exception as error:
-        mensaje_error(error, "cargar el resumen")
+    except Exception as e:
+        error_ui(e, "cargar el dashboard")
 
 
 # =========================================================
-# 8. REGISTRAR PEDIDO
+# REGISTRAR PEDIDO
 # =========================================================
 
 elif pagina == "Registrar pedido":
-    st.title("➕ Registrar un pedido")
-    st.write("Completa los datos del cliente y los menús solicitados.")
+    banner("Nuevo pedido", "Registra los detalles y calcula el total automáticamente.")
 
-    # Los campos se limpian antes de volver a crear los widgets.
-    if st.session_state.pop("limpiar_form_pedido", False):
-        for clave in [
-            "rp_cliente", "rp_empresa", "rp_direccion",
-            "rp_fecha", "rp_precio", "rp_cantidad",
-            "rp_entrada", "rp_segundo", "rp_bebida",
-            "rp_obs", "rp_cantidad_entrada",
-            "rp_cantidad_segundo", "rp_cantidad_bebida",
+    if st.session_state.pop("limpiar_pedido", False):
+        for k in [
+            "cliente", "empresa_pedido", "direccion_pedido", "precio",
+            "cantidad", "entrada", "segundo", "bebida", "notas",
+            "fecha_pedido",
         ]:
-            st.session_state.pop(clave, None)
+            st.session_state.pop(k, None)
 
     try:
         empresas = [
-            e for e in cargar_empresas()
+            e for e in empresas_cargar()
             if e.get("activo", True)
         ]
+        opciones = ["Sin empresa"] + sorted(
+            {limpio(e.get("nombre")) for e in empresas if limpio(e.get("nombre"))}
+        )
 
-        nombres_empresas = sorted({
-            normalizar_nombre(e.get("nombre"))
-            for e in empresas
-            if normalizar_nombre(e.get("nombre"))
-        })
+        with st.form("form_pedido"):
+            st.markdown("#### 👤 Datos del cliente")
+            c1, c2 = st.columns(2)
 
-        opciones_empresa = ["Sin empresa"] + nombres_empresas
+            with c1:
+                cliente = st.text_input("Nombre del cliente *", key="cliente")
+                empresa = st.selectbox("Empresa", opciones, key="empresa_pedido")
+                direccion = st.text_input("Dirección de entrega", key="direccion_pedido")
 
-        with st.form("form_registrar_pedido"):
-            st.subheader("Datos del pedido")
-
-            col1, col2 = st.columns(2)
-
-            with col1:
-                cliente = st.text_input(
-                    "Nombre del cliente *",
-                    key="rp_cliente",
-                    placeholder="Ej. Juan Pérez",
-                )
-
-                empresa = st.selectbox(
-                    "Empresa",
-                    opciones_empresa,
-                    key="rp_empresa",
-                )
-
-                direccion = st.text_input(
-                    "Dirección de entrega",
-                    key="rp_direccion",
-                    placeholder="Calle, número, distrito...",
-                )
-
-                fecha_pedido = st.date_input(
-                    "Fecha del pedido",
-                    value=date.today(),
-                    key="rp_fecha",
-                )
-
-            with col2:
-                precio_menu = st.number_input(
+            with c2:
+                fecha_pedido = st.date_input("Fecha del pedido", value=date.today(), key="fecha_pedido")
+                precio = st.number_input(
                     "Precio por menú (S/)",
                     min_value=0.0,
                     value=15.0,
                     step=0.5,
-                    format="%.2f",
-                    key="rp_precio",
+                    key="precio",
                 )
-
-                cantidad_menus = st.number_input(
+                cantidad = st.number_input(
                     "Cantidad de menús",
                     min_value=1,
                     max_value=10000,
                     value=1,
                     step=1,
-                    key="rp_cantidad",
+                    key="cantidad",
                 )
 
-                st.markdown("**Detalle de los platos**")
+            st.divider()
+            st.markdown("#### 🍽️ Detalles de la comida")
+            c1, c2, c3 = st.columns(3)
 
-                entrada = st.text_input(
-                    "Entrada",
-                    key="rp_entrada",
-                    placeholder="Ej. Papa a la huancaína",
-                )
+            with c1:
+                entrada = st.text_input("Entrada", key="entrada")
+            with c2:
+                segundo = st.text_input("Segundo", key="segundo")
+            with c3:
+                bebida = st.text_input("Bebida o adicional", key="bebida")
 
-                cantidad_entrada = st.number_input(
-                    "Cantidad de entradas",
-                    min_value=0,
-                    max_value=10000,
-                    value=1,
-                    step=1,
-                    key="rp_cantidad_entrada",
-                )
+            notas = st.text_area("Observaciones", key="notas")
+            total = float(precio) * int(cantidad)
 
-                segundo = st.text_input(
-                    "Segundo",
-                    key="rp_segundo",
-                    placeholder="Ej. Pollo broaster",
-                )
-
-                cantidad_segundo = st.number_input(
-                    "Cantidad de segundos",
-                    min_value=0,
-                    max_value=10000,
-                    value=1,
-                    step=1,
-                    key="rp_cantidad_segundo",
-                )
-
-                bebida = st.text_input(
-                    "Bebida u otro adicional",
-                    key="rp_bebida",
-                    placeholder="Opcional",
-                )
-
-                cantidad_bebida = st.number_input(
-                    "Cantidad de bebidas/adicionales",
-                    min_value=0,
-                    max_value=10000,
-                    value=0,
-                    step=1,
-                    key="rp_cantidad_bebida",
-                )
-
-            observaciones = st.text_area(
-                "Observaciones",
-                key="rp_obs",
-                placeholder="Indicaciones, cambios, detalles...",
-            )
-
-            total_estimado = float(precio_menu) * int(cantidad_menus)
-
-            st.info(
-                f"Total calculado: **{dinero(total_estimado)}** "
-                f"({int(cantidad_menus)} × {dinero(precio_menu)})"
-            )
+            st.info(f"**Total del pedido: {dinero(total)}**")
 
             guardar = st.form_submit_button(
                 "💾 Guardar pedido",
@@ -721,166 +825,90 @@ elif pagina == "Registrar pedido":
             )
 
         if guardar:
-            cliente_limpio = normalizar_nombre(cliente)
-            empresa_limpia = (
-                "" if empresa == "Sin empresa"
-                else normalizar_nombre(empresa)
-            )
-
-            if not cliente_limpio:
+            if not limpio(cliente):
                 st.error("Escribe el nombre del cliente.")
-            elif precio_menu <= 0:
-                st.error("El precio del menú debe ser mayor que cero.")
-            elif cantidad_menus < 1:
-                st.error("La cantidad de menús debe ser al menos 1.")
+            elif precio <= 0:
+                st.error("El precio debe ser mayor que cero.")
             else:
-                total = round(
-                    float(precio_menu) * int(cantidad_menus),
-                    2,
-                )
-
-                obs_finales = observaciones_con_direccion(
-                    direccion,
-                    observaciones,
-                )
-
-                datos_pedido = {
+                registro = {
                     "fecha": fecha_pedido.isoformat(),
-                    "cliente": cliente_limpio,
-                    "empresa": empresa_limpia,
-                    "precio_menu": float(precio_menu),
-                    "cantidad_menus": int(cantidad_menus),
-                    "total": total,
-                    "observaciones": obs_finales,
+                    "cliente": limpio(cliente),
+                    "empresa": "" if empresa == "Sin empresa" else limpio(empresa),
+                    "precio_menu": float(precio),
+                    "cantidad_menus": int(cantidad),
+                    "total": round(total, 2),
+                    "observaciones": observaciones_finales(direccion, notas),
                 }
 
-                detalles = []
-
-                if normalizar_nombre(entrada) and int(cantidad_entrada) > 0:
-                    detalles.append({
-                        "tipo": "Entrada",
-                        "plato": normalizar_nombre(entrada),
-                        "cantidad": int(cantidad_entrada),
-                    })
-
-                if normalizar_nombre(segundo) and int(cantidad_segundo) > 0:
-                    detalles.append({
-                        "tipo": "Segundo",
-                        "plato": normalizar_nombre(segundo),
-                        "cantidad": int(cantidad_segundo),
-                    })
-
-                if normalizar_nombre(bebida) and int(cantidad_bebida) > 0:
-                    detalles.append({
-                        "tipo": "Bebida/Adicional",
-                        "plato": normalizar_nombre(bebida),
-                        "cantidad": int(cantidad_bebida),
-                    })
-
-                pedido_id = None
-
                 try:
-                    respuesta = (
-                        supabase.table("pedidos")
-                        .insert(datos_pedido)
-                        .execute()
-                    )
-
+                    respuesta = db.table("pedidos").insert(registro).execute()
                     if not respuesta.data:
-                        raise RuntimeError(
-                            "Supabase no devolvió el pedido creado."
-                        )
+                        raise RuntimeError("Supabase no devolvió el pedido creado.")
 
                     pedido_id = respuesta.data[0].get("id")
-
                     if pedido_id is None:
-                        raise RuntimeError(
-                            "No se recibió el identificador del pedido."
-                        )
+                        raise RuntimeError("No se recibió el ID del pedido.")
+
+                    detalles = []
+                    for tipo, plato in [
+                        ("Entrada", entrada),
+                        ("Segundo", segundo),
+                        ("Bebida/Adicional", bebida),
+                    ]:
+                        if limpio(plato):
+                            detalles.append({
+                                "pedido_id": pedido_id,
+                                "tipo": tipo,
+                                "plato": limpio(plato),
+                                "cantidad": int(cantidad),
+                            })
 
                     if detalles:
-                        filas_detalle = [
-                            {
-                                "pedido_id": pedido_id,
-                                **detalle,
-                            }
-                            for detalle in detalles
-                        ]
-
                         try:
-                            supabase.table("detalle_pedido").insert(
-                                filas_detalle
-                            ).execute()
+                            db.table("detalle_pedido").insert(detalles).execute()
                         except Exception:
-                            # Evita dejar un pedido incompleto si fallan
-                            # los detalles al registrar uno nuevo.
                             try:
-                                supabase.table("pedidos").delete().eq(
-                                    "id", pedido_id
-                                ).execute()
+                                db.table("pedidos").delete().eq("id", pedido_id).execute()
                             except Exception:
                                 pass
-
                             raise RuntimeError(
-                                "No se guardaron los platos. "
-                                "Se intentó cancelar el pedido para evitar "
-                                "un registro incompleto."
+                                "Falló el guardado de los detalles. "
+                                "Se intentó cancelar el pedido."
                             )
 
-                    registrar_evento(
-                        "CREAR_PEDIDO",
-                        f"Pedido {pedido_id}; cliente={cliente_limpio}; "
-                        f"total={total}",
-                    )
-
-                    refrescar_datos()
-                    st.session_state.limpiar_form_pedido = True
-                    st.success(
-                        f"Pedido #{pedido_id} guardado correctamente. "
-                        f"Total: {dinero(total)}"
-                    )
+                    registrar_evento("CREAR_PEDIDO", f"Pedido {pedido_id}")
+                    refrescar()
+                    st.session_state.limpiar_pedido = True
+                    st.success(f"Pedido #{pedido_id} registrado por {dinero(total)}.")
                     st.rerun()
 
-                except Exception as error:
-                    mensaje_error(error, "guardar el pedido")
+                except Exception as e:
+                    error_ui(e, "guardar el pedido")
 
-    except Exception as error:
-        mensaje_error(error, "cargar los datos para el registro")
+    except Exception as e:
+        error_ui(e, "cargar las empresas")
 
 
 # =========================================================
-# 9. HISTORIAL, EDICIÓN Y ELIMINACIÓN DE PEDIDOS
+# PEDIDOS: HISTORIAL, EDICIÓN Y ELIMINACIÓN
 # =========================================================
 
 elif pagina == "Pedidos":
-    st.title("📋 Historial de pedidos")
+    banner("Pedidos", "Consulta, busca, edita y exporta los pedidos.")
 
     try:
-        pedidos = cargar_pedidos()
+        pedidos = pedidos_cargar()
 
         if not pedidos:
-            st.info("Todavía no hay pedidos.")
+            st.info("Todavía no hay pedidos registrados.")
         else:
-            busqueda = st.text_input(
-                "Buscar por cliente, empresa o número de pedido",
-                placeholder="Escribe para buscar...",
-            )
+            busqueda = st.text_input("🔎 Buscar por cliente, empresa o ID")
+            a, b = st.columns(2)
 
-            c1, c2 = st.columns(2)
-
-            with c1:
-                desde = st.date_input(
-                    "Desde",
-                    value=date.today() - timedelta(days=30),
-                    key="hist_desde",
-                )
-
-            with c2:
-                hasta = st.date_input(
-                    "Hasta",
-                    value=date.today(),
-                    key="hist_hasta",
-                )
+            with a:
+                desde = st.date_input("Desde", date.today() - timedelta(days=30))
+            with b:
+                hasta = st.date_input("Hasta", date.today())
 
             if desde > hasta:
                 st.error("La fecha inicial no puede ser posterior a la final.")
@@ -888,798 +916,487 @@ elif pagina == "Pedidos":
 
             filtrados = []
 
-            for pedido in pedidos:
-                fecha_pedido = fecha_segura(pedido.get("fecha"))
-
-                if fecha_pedido and not (desde <= fecha_pedido <= hasta):
+            for p in pedidos:
+                f = fecha_segura(p.get("fecha"))
+                if f and not desde <= f <= hasta:
                     continue
 
-                texto_busqueda = " ".join([
-                    str(pedido.get("id", "")),
-                    str(pedido.get("cliente", "")),
-                    str(pedido.get("empresa", "")),
+                texto = " ".join([
+                    str(p.get("id", "")),
+                    str(p.get("cliente", "")),
+                    str(p.get("empresa", "")),
                 ]).lower()
 
-                if busqueda.strip() and busqueda.lower() not in texto_busqueda:
+                if busqueda and busqueda.lower() not in texto:
                     continue
 
-                filtrados.append(pedido)
+                filtrados.append(p)
 
-            tabla = []
-
+            filas = []
             for p in filtrados:
-                direccion, notas = separar_direccion(
-                    p.get("observaciones", "")
-                )
-
-                tabla.append({
+                direccion, notas = direccion_y_notas(p.get("observaciones", ""))
+                filas.append({
                     "ID": p.get("id"),
                     "Fecha": p.get("fecha", ""),
                     "Cliente": p.get("cliente", ""),
-                    "Empresa": p.get("empresa", ""),
-                    "Precio": dinero(p.get("precio_menu", 0)),
+                    "Empresa": p.get("empresa", "") or "Particular",
                     "Menús": p.get("cantidad_menus", 0),
+                    "Precio": dinero(p.get("precio_menu", 0)),
                     "Total": dinero(p.get("total", 0)),
                     "Dirección": direccion,
                     "Observaciones": notas,
                 })
 
-            st.dataframe(
-                pd.DataFrame(tabla),
-                use_container_width=True,
-                hide_index=True,
-            )
-
-            st.caption(f"Pedidos encontrados: {len(filtrados)}")
-
-            exportaciones(tabla, "pedidos")
-
-            st.divider()
-            st.subheader("Editar o eliminar un pedido")
+            st.markdown('<div class="panel">', unsafe_allow_html=True)
+            panel_titulo("Historial", f"{len(filtrados)} pedidos encontrados")
+            st.dataframe(pd.DataFrame(filas), use_container_width=True, hide_index=True)
+            exportar(filas, "pedidos")
+            st.markdown('</div>', unsafe_allow_html=True)
 
             ids = [p.get("id") for p in filtrados if p.get("id") is not None]
 
             if ids:
-                pedido_id = st.selectbox(
-                    "Selecciona el pedido",
+                st.write("")
+                st.markdown("### Administrar pedido")
+                pid = st.selectbox(
+                    "Selecciona un pedido",
                     ids,
-                    format_func=lambda x: (
-                        f"Pedido #{x} — "
-                        + str(next(
-                            (
-                                p.get("cliente", "")
-                                for p in filtrados
-                                if str(p.get("id")) == str(x)
-                            ),
-                            "",
-                        ))
+                    format_func=lambda x: f"Pedido #{x} — " + next(
+                        (str(p.get("cliente", "")) for p in filtrados if str(p.get("id")) == str(x)),
+                        "",
                     ),
                 )
+                p = next(p for p in filtrados if str(p.get("id")) == str(pid))
+                direccion_actual, notas_actuales = direccion_y_notas(p.get("observaciones", ""))
 
-                pedido = next(
-                    p for p in filtrados
-                    if str(p.get("id")) == str(pedido_id)
-                )
-
-                direccion_actual, notas_actuales = separar_direccion(
-                    pedido.get("observaciones", "")
-                )
-
-                with st.expander("✏️ Editar datos del pedido"):
-                    with st.form("form_editar_pedido"):
-                        nuevo_cliente = st.text_input(
-                            "Cliente",
-                            value=str(pedido.get("cliente", "")),
-                        )
-
-                        nueva_empresa = st.text_input(
-                            "Empresa",
-                            value=str(pedido.get("empresa", "")),
-                        )
-
-                        nueva_direccion = st.text_input(
-                            "Dirección",
-                            value=direccion_actual,
-                        )
-
-                        fecha_actual = (
-                            fecha_segura(pedido.get("fecha")) or date.today()
-                        )
-
-                        nueva_fecha = st.date_input(
-                            "Fecha",
-                            value=fecha_actual,
-                        )
-
-                        nuevo_precio = st.number_input(
+                with st.expander("✏️ Editar datos"):
+                    with st.form("editar_pedido"):
+                        cliente = st.text_input("Cliente", value=str(p.get("cliente", "")))
+                        empresa = st.text_input("Empresa", value=str(p.get("empresa", "")))
+                        direccion = st.text_input("Dirección", value=direccion_actual)
+                        fecha_actual = fecha_segura(p.get("fecha")) or date.today()
+                        fecha_pedido = st.date_input("Fecha", value=fecha_actual)
+                        precio = st.number_input(
                             "Precio por menú",
                             min_value=0.0,
-                            value=float(pedido.get("precio_menu") or 0),
+                            value=float(p.get("precio_menu") or 0),
                             step=0.5,
                         )
-
-                        nueva_cantidad = st.number_input(
+                        cantidad = st.number_input(
                             "Cantidad de menús",
                             min_value=1,
                             max_value=10000,
-                            value=max(
-                                1,
-                                int(pedido.get("cantidad_menus") or 1),
-                            ),
-                            step=1,
+                            value=max(1, int(p.get("cantidad_menus") or 1)),
                         )
+                        notas = st.text_area("Observaciones", value=notas_actuales)
+                        actualizar = st.form_submit_button("Guardar cambios", type="primary")
 
-                        nuevas_notas = st.text_area(
-                            "Observaciones",
-                            value=notas_actuales,
-                        )
-
-                        st.caption(
-                            "La edición conserva los platos del pedido. "
-                            "Los datos del cliente, fecha y total sí se actualizan."
-                        )
-
-                        guardar_edicion = st.form_submit_button(
-                            "Guardar cambios",
-                            type="primary",
-                            use_container_width=True,
-                        )
-
-                    if guardar_edicion:
-                        if not normalizar_nombre(nuevo_cliente):
+                    if actualizar:
+                        if not limpio(cliente):
                             st.error("El cliente no puede quedar vacío.")
-                        elif nuevo_precio <= 0:
+                        elif precio <= 0:
                             st.error("El precio debe ser mayor que cero.")
                         else:
                             try:
-                                nuevo_total = round(
-                                    float(nuevo_precio) * int(nueva_cantidad),
-                                    2,
-                                )
+                                db.table("pedidos").update({
+                                    "fecha": fecha_pedido.isoformat(),
+                                    "cliente": limpio(cliente),
+                                    "empresa": limpio(empresa),
+                                    "precio_menu": float(precio),
+                                    "cantidad_menus": int(cantidad),
+                                    "total": round(float(precio) * int(cantidad), 2),
+                                    "observaciones": observaciones_finales(direccion, notas),
+                                }).eq("id", pid).execute()
 
-                                nuevo_registro = {
-                                    "fecha": nueva_fecha.isoformat(),
-                                    "cliente": normalizar_nombre(nuevo_cliente),
-                                    "empresa": normalizar_nombre(nueva_empresa),
-                                    "precio_menu": float(nuevo_precio),
-                                    "cantidad_menus": int(nueva_cantidad),
-                                    "total": nuevo_total,
-                                    "observaciones": (
-                                        observaciones_con_direccion(
-                                            nueva_direccion,
-                                            nuevas_notas,
-                                        )
-                                    ),
-                                }
-
-                                supabase.table("pedidos").update(
-                                    nuevo_registro
-                                ).eq("id", pedido_id).execute()
-
-                                registrar_evento(
-                                    "EDITAR_PEDIDO",
-                                    f"Pedido {pedido_id}; "
-                                    f"cliente={nuevo_cliente}",
-                                )
-
-                                refrescar_datos()
+                                registrar_evento("EDITAR_PEDIDO", f"Pedido {pid}")
+                                refrescar()
                                 st.success("Pedido actualizado.")
                                 st.rerun()
+                            except Exception as e:
+                                error_ui(e, "actualizar el pedido")
 
-                            except Exception as error:
-                                mensaje_error(error, "actualizar el pedido")
+                with st.expander("🗑️ Eliminar pedido"):
+                    st.warning("Se eliminará el pedido y sus detalles. Esta acción no se puede deshacer.")
+                    confirmar = st.checkbox("Confirmo que quiero eliminarlo", key=f"confirmar_{pid}")
 
-                with st.expander("🗑️ Eliminar un pedido"):
-                    st.warning(
-                        "Esta acción elimina el pedido y sus platos asociados. "
-                        "No se puede deshacer."
-                    )
-
-                    confirmar = st.checkbox(
-                        f"Confirmo que quiero eliminar el pedido #{pedido_id}",
-                        key=f"confirmar_eliminar_{pedido_id}",
-                    )
-
-                    if st.button(
-                        "Eliminar pedido seleccionado",
-                        type="primary",
-                        disabled=not confirmar,
-                    ):
+                    if st.button("Eliminar pedido", disabled=not confirmar, type="primary"):
                         try:
-                            # Primero se eliminan los detalles asociados.
-                            supabase.table("detalle_pedido").delete().eq(
-                                "pedido_id", pedido_id
-                            ).execute()
-
-                            supabase.table("pedidos").delete().eq(
-                                "id", pedido_id
-                            ).execute()
-
-                            registrar_evento(
-                                "ELIMINAR_PEDIDO",
-                                f"Pedido {pedido_id}",
-                                "AVISO",
-                            )
-
-                            refrescar_datos()
+                            db.table("detalle_pedido").delete().eq("pedido_id", pid).execute()
+                            db.table("pedidos").delete().eq("id", pid).execute()
+                            registrar_evento("ELIMINAR_PEDIDO", f"Pedido {pid}", "AVISO")
+                            refrescar()
                             st.success("Pedido eliminado.")
                             st.rerun()
+                        except Exception as e:
+                            error_ui(e, "eliminar el pedido")
 
-                        except Exception as error:
-                            mensaje_error(error, "eliminar el pedido")
-
-    except Exception as error:
-        mensaje_error(error, "cargar el historial")
+    except Exception as e:
+        error_ui(e, "cargar los pedidos")
 
 
 # =========================================================
-# 10. ESTADÍSTICAS
+# ESTADÍSTICAS
 # =========================================================
 
 elif pagina == "Estadísticas":
-    st.title("📊 Estadísticas de ventas")
+    banner("Estadísticas", "Entiende tus ventas y toma mejores decisiones.")
 
     try:
-        pedidos = cargar_pedidos()
+        pedidos = pedidos_cargar()
+        fechas = [fecha_segura(p.get("fecha")) for p in pedidos]
+        fechas = [f for f in fechas if f]
 
-        if not pedidos:
-            st.info("Registra pedidos para comenzar a ver estadísticas.")
+        if not fechas:
+            st.info("Cuando registres pedidos, aquí aparecerán tus estadísticas.")
         else:
-            fechas_validas = [
-                fecha_segura(p.get("fecha"))
-                for p in pedidos
-                if fecha_segura(p.get("fecha")) is not None
-            ]
+            a, b = st.columns(2)
 
-            fecha_minima = min(fechas_validas) if fechas_validas else date.today()
-            fecha_maxima = max(fechas_validas) if fechas_validas else date.today()
-
-            c1, c2 = st.columns(2)
-
-            with c1:
-                inicio = st.date_input(
-                    "Fecha inicial",
-                    value=max(fecha_minima, date.today() - timedelta(days=30)),
-                    min_value=fecha_minima,
-                    max_value=fecha_maxima,
+            with a:
+                desde = st.date_input(
+                    "Desde",
+                    value=max(min(fechas), date.today() - timedelta(days=30)),
+                    min_value=min(fechas),
+                    max_value=max(fechas),
                     key="estad_desde",
                 )
 
-            with c2:
-                fin = st.date_input(
-                    "Fecha final",
-                    value=fecha_maxima,
-                    min_value=fecha_minima,
-                    max_value=fecha_maxima,
+            with b:
+                hasta = st.date_input(
+                    "Hasta",
+                    value=max(fechas),
+                    min_value=min(fechas),
+                    max_value=max(fechas),
                     key="estad_hasta",
                 )
 
-            if inicio > fin:
-                st.error("La fecha inicial debe ser anterior a la final.")
+            if desde > hasta:
+                st.error("Revisa el rango de fechas.")
                 st.stop()
 
-            seleccionados = [
+            datos = [
                 p for p in pedidos
-                if fecha_segura(p.get("fecha")) is not None
-                and inicio <= fecha_segura(p.get("fecha")) <= fin
+                if fecha_segura(p.get("fecha"))
+                and desde <= fecha_segura(p.get("fecha")) <= hasta
             ]
 
-            ventas = sum(float(p.get("total") or 0) for p in seleccionados)
-            cantidad = sum(
-                int(p.get("cantidad_menus") or 0)
-                for p in seleccionados
-            )
+            venta = sum(float(p.get("total") or 0) for p in datos)
+            menus = sum(int(p.get("cantidad_menus") or 0) for p in datos)
 
-            a, b, c = st.columns(3)
-            a.metric("Ventas del período", dinero(ventas))
-            b.metric("Pedidos", len(seleccionados))
-            c.metric("Menús vendidos", cantidad)
+            x, y, z = st.columns(3)
+            x.metric("Ventas totales", dinero(venta))
+            y.metric("Pedidos", len(datos))
+            z.metric("Menús vendidos", menus)
 
-            st.subheader("Ventas por empresa")
+            st.write("")
+            izq, der = st.columns(2)
 
-            resumen_empresa = {}
+            with izq:
+                st.markdown('<div class="panel">', unsafe_allow_html=True)
+                panel_titulo("Ventas por empresa")
+                por_empresa = {}
 
-            for p in seleccionados:
-                empresa = normalizar_nombre(p.get("empresa")) or "Sin empresa"
-                resumen_empresa.setdefault(
-                    empresa,
-                    {"Pedidos": 0, "Menús": 0, "Ventas": 0.0},
-                )
+                for p in datos:
+                    nombre = limpio(p.get("empresa")) or "Particular"
+                    por_empresa[nombre] = por_empresa.get(nombre, 0) + float(p.get("total") or 0)
 
-                resumen_empresa[empresa]["Pedidos"] += 1
-                resumen_empresa[empresa]["Menús"] += int(
-                    p.get("cantidad_menus") or 0
-                )
-                resumen_empresa[empresa]["Ventas"] += float(
-                    p.get("total") or 0
-                )
+                if por_empresa:
+                    df = pd.DataFrame([
+                        {"Empresa": k, "Ventas": v}
+                        for k, v in sorted(por_empresa.items(), key=lambda x: x[1], reverse=True)
+                    ])
+                    st.bar_chart(df.set_index("Empresa"))
+                else:
+                    st.info("Sin datos.")
+                st.markdown('</div>', unsafe_allow_html=True)
 
-            datos_empresa = []
+            with der:
+                st.markdown('<div class="panel">', unsafe_allow_html=True)
+                panel_titulo("Ventas por día")
+                por_dia = {}
 
-            for empresa, valores in sorted(
-                resumen_empresa.items(),
-                key=lambda elemento: elemento[1]["Ventas"],
-                reverse=True,
-            ):
-                datos_empresa.append({
-                    "Empresa": empresa,
-                    "Pedidos": valores["Pedidos"],
-                    "Menús": valores["Menús"],
-                    "Ventas": round(valores["Ventas"], 2),
-                })
+                for p in datos:
+                    f = fecha_segura(p.get("fecha"))
+                    if f:
+                        por_dia[f.isoformat()] = por_dia.get(f.isoformat(), 0) + float(p.get("total") or 0)
 
-            if datos_empresa:
-                df_empresas = pd.DataFrame(datos_empresa)
+                if por_dia:
+                    df = pd.DataFrame([
+                        {"Fecha": k, "Ventas": v}
+                        for k, v in sorted(por_dia.items())
+                    ])
+                    st.line_chart(df.set_index("Fecha"))
+                else:
+                    st.info("Sin datos.")
+                st.markdown('</div>', unsafe_allow_html=True)
 
-                st.dataframe(
-                    df_empresas,
-                    use_container_width=True,
-                    hide_index=True,
-                )
+            st.write("")
+            exportar(datos, "estadisticas")
 
-                st.bar_chart(
-                    df_empresas.set_index("Empresa")["Ventas"]
-                )
-
-            st.subheader("Ventas por día")
-
-            ventas_dia = {}
-
-            for p in seleccionados:
-                f = fecha_segura(p.get("fecha"))
-                if f:
-                    clave = f.isoformat()
-                    ventas_dia[clave] = (
-                        ventas_dia.get(clave, 0)
-                        + float(p.get("total") or 0)
-                    )
-
-            if ventas_dia:
-                df_dias = pd.DataFrame(
-                    [
-                        {"Fecha": f, "Ventas": v}
-                        for f, v in sorted(ventas_dia.items())
-                    ]
-                )
-
-                st.line_chart(
-                    df_dias.set_index("Fecha")["Ventas"]
-                )
-
-            exportaciones(seleccionados, "estadisticas_pedidos")
-
-    except Exception as error:
-        mensaje_error(error, "calcular las estadísticas")
+    except Exception as e:
+        error_ui(e, "calcular las estadísticas")
 
 
 # =========================================================
-# 11. EMPRESAS INDEPENDIENTES
+# EMPRESAS
 # =========================================================
 
 elif pagina == "Empresas":
-    st.title("🏢 Gestión de empresas")
-    st.write(
-        "Las empresas se guardan de forma independiente a los pedidos. "
-        "Puedes registrarlas antes de recibir una orden."
-    )
+    banner("Empresas", "Administra tus clientes empresariales de forma independiente.")
 
     try:
-        empresas = cargar_empresas()
+        empresas = empresas_cargar()
 
-        with st.expander("➕ Registrar una empresa", expanded=not bool(empresas)):
-            with st.form("form_nueva_empresa"):
-                nombre = st.text_input(
-                    "Nombre de la empresa *",
-                    placeholder="Nombre comercial",
-                )
-
+        with st.expander("＋ Registrar empresa", expanded=not bool(empresas)):
+            with st.form("crear_empresa"):
+                nombre = st.text_input("Nombre de empresa *")
                 contacto = st.text_input("Persona de contacto")
                 telefono = st.text_input("Teléfono")
                 direccion = st.text_input("Dirección")
-                observaciones = st.text_area("Observaciones")
+                notas = st.text_area("Observaciones")
+                guardar = st.form_submit_button("Guardar empresa", type="primary")
 
-                crear = st.form_submit_button(
-                    "Guardar empresa",
-                    type="primary",
-                    use_container_width=True,
-                )
+            if guardar:
+                nombre = limpio(nombre)
 
-            if crear:
-                nombre_limpio = normalizar_nombre(nombre)
-
-                if not nombre_limpio:
+                if not nombre:
                     st.error("Escribe el nombre de la empresa.")
+                elif any(limpio(e.get("nombre")).casefold() == nombre.casefold() for e in empresas):
+                    st.error("Ya existe una empresa con ese nombre.")
                 else:
-                    duplicada = any(
-                        normalizar_nombre(e.get("nombre")).casefold()
-                        == nombre_limpio.casefold()
-                        for e in empresas
-                    )
+                    try:
+                        db.table("empresas").insert({
+                            "nombre": nombre,
+                            "contacto": limpio(contacto),
+                            "telefono": limpio(telefono),
+                            "direccion": limpio(direccion),
+                            "observaciones": notas,
+                            "activo": True,
+                        }).execute()
+                        registrar_evento("CREAR_EMPRESA", nombre)
+                        refrescar()
+                        st.success("Empresa registrada.")
+                        st.rerun()
+                    except Exception as e:
+                        error_ui(e, "crear la empresa")
 
-                    if duplicada:
-                        st.error("Ya existe una empresa con ese nombre.")
-                    else:
-                        try:
-                            supabase.table("empresas").insert({
-                                "nombre": nombre_limpio,
-                                "contacto": normalizar_nombre(contacto),
-                                "telefono": normalizar_nombre(telefono),
-                                "direccion": normalizar_nombre(direccion),
-                                "observaciones": observaciones.strip(),
-                                "activo": True,
-                            }).execute()
-
-                            registrar_evento(
-                                "CREAR_EMPRESA",
-                                nombre_limpio,
-                            )
-
-                            refrescar_datos()
-                            st.success("Empresa registrada correctamente.")
-                            st.rerun()
-
-                        except Exception as error:
-                            mensaje_error(error, "registrar la empresa")
-
-        st.subheader("Empresas registradas")
-
-        empresas = cargar_empresas()
+        empresas = empresas_cargar()
 
         if empresas:
-            mostrar = []
+            tabla = [{
+                "ID": e.get("id"),
+                "Empresa": e.get("nombre", ""),
+                "Contacto": e.get("contacto", ""),
+                "Teléfono": e.get("telefono", ""),
+                "Dirección": e.get("direccion", ""),
+                "Estado": "Activa" if e.get("activo", True) else "Inactiva",
+            } for e in empresas]
 
-            for e in empresas:
-                mostrar.append({
-                    "ID": e.get("id"),
-                    "Empresa": e.get("nombre", ""),
-                    "Contacto": e.get("contacto", ""),
-                    "Teléfono": e.get("telefono", ""),
-                    "Dirección": e.get("direccion", ""),
-                    "Estado": (
-                        "Activa" if e.get("activo", True) else "Inactiva"
-                    ),
-                    "Observaciones": e.get("observaciones", ""),
-                })
+            st.markdown('<div class="panel">', unsafe_allow_html=True)
+            panel_titulo("Directorio de empresas", f"{len(empresas)} empresas registradas")
+            st.dataframe(pd.DataFrame(tabla), use_container_width=True, hide_index=True)
+            exportar(tabla, "empresas")
+            st.markdown('</div>', unsafe_allow_html=True)
 
-            st.dataframe(
-                pd.DataFrame(mostrar),
-                use_container_width=True,
-                hide_index=True,
-            )
+            ids = [e.get("id") for e in empresas if e.get("id") is not None]
 
-            exportaciones(mostrar, "empresas")
-
-            ids_empresas = [
-                e.get("id") for e in empresas
-                if e.get("id") is not None
-            ]
-
-            st.divider()
-            st.subheader("Editar o cambiar estado")
-
-            empresa_id = st.selectbox(
+            st.write("")
+            st.markdown("### Editar empresa")
+            eid = st.selectbox(
                 "Selecciona una empresa",
-                ids_empresas,
-                format_func=lambda x: (
-                    f"#{x} — "
-                    + str(next(
-                        (
-                            e.get("nombre", "")
-                            for e in empresas
-                            if str(e.get("id")) == str(x)
-                        ),
-                        "",
-                    ))
+                ids,
+                format_func=lambda x: f"#{x} — " + next(
+                    (str(e.get("nombre", "")) for e in empresas if str(e.get("id")) == str(x)),
+                    "",
                 ),
             )
+            e = next(e for e in empresas if str(e.get("id")) == str(eid))
 
-            empresa_actual = next(
-                e for e in empresas
-                if str(e.get("id")) == str(empresa_id)
-            )
+            with st.form("editar_empresa"):
+                nombre = st.text_input("Nombre", value=str(e.get("nombre", "")))
+                contacto = st.text_input("Contacto", value=str(e.get("contacto", "")))
+                telefono = st.text_input("Teléfono", value=str(e.get("telefono", "")))
+                direccion = st.text_input("Dirección", value=str(e.get("direccion", "")))
+                notas = st.text_area("Observaciones", value=str(e.get("observaciones", "")))
+                activo = st.checkbox("Empresa activa", value=bool(e.get("activo", True)))
+                actualizar = st.form_submit_button("Guardar cambios", type="primary")
 
-            with st.form("form_editar_empresa"):
-                nombre_editado = st.text_input(
-                    "Nombre",
-                    value=str(empresa_actual.get("nombre", "")),
+            if actualizar:
+                nombre_nuevo = limpio(nombre)
+                duplicada = any(
+                    str(otra.get("id")) != str(eid)
+                    and limpio(otra.get("nombre")).casefold() == nombre_nuevo.casefold()
+                    for otra in empresas
                 )
-
-                contacto_editado = st.text_input(
-                    "Contacto",
-                    value=str(empresa_actual.get("contacto", "")),
-                )
-
-                telefono_editado = st.text_input(
-                    "Teléfono",
-                    value=str(empresa_actual.get("telefono", "")),
-                )
-
-                direccion_editada = st.text_input(
-                    "Dirección",
-                    value=str(empresa_actual.get("direccion", "")),
-                )
-
-                observaciones_editadas = st.text_area(
-                    "Observaciones",
-                    value=str(empresa_actual.get("observaciones", "")),
-                )
-
-                activo_editado = st.checkbox(
-                    "Empresa activa",
-                    value=bool(empresa_actual.get("activo", True)),
-                )
-
-                actualizar_empresa = st.form_submit_button(
-                    "Guardar cambios de empresa",
-                    type="primary",
-                    use_container_width=True,
-                )
-
-            if actualizar_empresa:
-                nombre_nuevo = normalizar_nombre(nombre_editado)
 
                 if not nombre_nuevo:
-                    st.error("El nombre no puede quedar vacío.")
+                    st.error("El nombre no puede estar vacío.")
+                elif duplicada:
+                    st.error("Ya existe otra empresa con ese nombre.")
                 else:
-                    existe = any(
-                        str(e.get("id")) != str(empresa_id)
-                        and normalizar_nombre(e.get("nombre")).casefold()
-                        == nombre_nuevo.casefold()
-                        for e in empresas
-                    )
+                    try:
+                        anterior = limpio(e.get("nombre"))
+                        db.table("empresas").update({
+                            "nombre": nombre_nuevo,
+                            "contacto": limpio(contacto),
+                            "telefono": limpio(telefono),
+                            "direccion": limpio(direccion),
+                            "observaciones": notas,
+                            "activo": activo,
+                        }).eq("id", eid).execute()
 
-                    if existe:
-                        st.error("Otra empresa ya utiliza ese nombre.")
-                    else:
-                        try:
-                            nombre_anterior = normalizar_nombre(
-                                empresa_actual.get("nombre")
-                            )
+                        if anterior != nombre_nuevo:
+                            db.table("pedidos").update({
+                                "empresa": nombre_nuevo
+                            }).eq("empresa", anterior).execute()
 
-                            supabase.table("empresas").update({
-                                "nombre": nombre_nuevo,
-                                "contacto": normalizar_nombre(contacto_editado),
-                                "telefono": normalizar_nombre(telefono_editado),
-                                "direccion": normalizar_nombre(direccion_editada),
-                                "observaciones": observaciones_editadas.strip(),
-                                "activo": bool(activo_editado),
-                            }).eq("id", empresa_id).execute()
-
-                            # Actualiza la referencia en pedidos antiguos
-                            # cuando solo se cambió el nombre.
-                            if nombre_anterior != nombre_nuevo:
-                                supabase.table("pedidos").update({
-                                    "empresa": nombre_nuevo
-                                }).eq("empresa", nombre_anterior).execute()
-
-                            registrar_evento(
-                                "EDITAR_EMPRESA",
-                                f"Empresa {empresa_id}: {nombre_nuevo}",
-                            )
-
-                            refrescar_datos()
-                            st.success("Empresa actualizada.")
-                            st.rerun()
-
-                        except Exception as error:
-                            mensaje_error(error, "actualizar la empresa")
-
+                        registrar_evento("EDITAR_EMPRESA", nombre_nuevo)
+                        refrescar()
+                        st.success("Empresa actualizada.")
+                        st.rerun()
+                    except Exception as e:
+                        error_ui(e, "actualizar la empresa")
         else:
-            st.info("Aún no hay empresas registradas.")
+            st.info("Todavía no hay empresas. Puedes registrar la primera arriba.")
 
-    except Exception as error:
-        mensaje_error(error, "gestionar las empresas")
+    except Exception as e:
+        error_ui(e, "cargar las empresas")
 
 
 # =========================================================
-# 12. CATÁLOGO
+# CATÁLOGO
 # =========================================================
 
 elif pagina == "Catálogo":
-    st.title("🍽️ Catálogo de platos")
-    st.write(
-        "Administra las entradas, segundos, bebidas y otros productos "
-        "que utilizas habitualmente."
-    )
+    banner("Catálogo de platos", "Organiza tus entradas, segundos, bebidas y adicionales.")
 
     try:
-        catalogo = cargar_catalogo()
+        catalogo = catalogo_cargar()
 
-        with st.expander("➕ Agregar plato", expanded=not bool(catalogo)):
-            with st.form("form_nuevo_plato"):
-                nombre_plato = st.text_input("Nombre del plato *")
+        with st.expander("＋ Agregar plato", expanded=not bool(catalogo)):
+            with st.form("crear_plato"):
+                nombre = st.text_input("Nombre del plato *")
+                tipo = st.selectbox("Categoría", ["Entrada", "Segundo", "Bebida", "Extra", "Otro"])
+                guardar = st.form_submit_button("Guardar plato", type="primary")
 
-                tipo_plato = st.selectbox(
-                    "Tipo",
-                    [
-                        "Entrada",
-                        "Segundo",
-                        "Bebida",
-                        "Extra",
-                        "Otro",
-                    ],
-                )
+            if guardar:
+                nombre = limpio(nombre)
 
-                agregar_plato = st.form_submit_button(
-                    "Guardar plato",
-                    type="primary",
-                    use_container_width=True,
-                )
-
-            if agregar_plato:
-                nombre_limpio = normalizar_nombre(nombre_plato)
-
-                if not nombre_limpio:
+                if not nombre:
                     st.error("Escribe el nombre del plato.")
-                else:
-                    existe = any(
-                        normalizar_nombre(p.get("nombre")).casefold()
-                        == nombre_limpio.casefold()
-                        and str(p.get("tipo", "")).casefold()
-                        == tipo_plato.casefold()
-                        for p in catalogo
-                    )
-
-                    if existe:
-                        st.error("Ese plato ya existe en ese tipo.")
-                    else:
-                        try:
-                            supabase.table("catalogo_platos").insert({
-                                "tipo": tipo_plato,
-                                "nombre": nombre_limpio,
-                                "activo": True,
-                            }).execute()
-
-                            registrar_evento(
-                                "CREAR_PLATO",
-                                f"{tipo_plato}: {nombre_limpio}",
-                            )
-
-                            refrescar_datos()
-                            st.success("Plato agregado al catálogo.")
-                            st.rerun()
-
-                        except Exception as error:
-                            mensaje_error(error, "agregar el plato")
-
-        catalogo = cargar_catalogo()
-
-        if catalogo:
-            mostrar_catalogo = [
-                {
-                    "ID": p.get("id"),
-                    "Tipo": p.get("tipo", ""),
-                    "Plato": p.get("nombre", ""),
-                    "Estado": (
-                        "Activo" if p.get("activo", True) else "Inactivo"
-                    ),
-                }
-                for p in catalogo
-            ]
-
-            st.dataframe(
-                pd.DataFrame(mostrar_catalogo),
-                use_container_width=True,
-                hide_index=True,
-            )
-
-            ids_platos = [
-                p.get("id") for p in catalogo
-                if p.get("id") is not None
-            ]
-
-            st.subheader("Editar un plato")
-
-            plato_id = st.selectbox(
-                "Selecciona un plato",
-                ids_platos,
-                format_func=lambda x: (
-                    f"#{x} — "
-                    + str(next(
-                        (
-                            p.get("nombre", "")
-                            for p in catalogo
-                            if str(p.get("id")) == str(x)
-                        ),
-                        "",
-                    ))
-                ),
-            )
-
-            plato_actual = next(
-                p for p in catalogo
-                if str(p.get("id")) == str(plato_id)
-            )
-
-            with st.form("form_editar_plato"):
-                plato_nombre_editado = st.text_input(
-                    "Nombre",
-                    value=str(plato_actual.get("nombre", "")),
-                )
-
-                tipos = [
-                    "Entrada", "Segundo", "Bebida", "Extra", "Otro"
-                ]
-
-                tipo_actual = str(plato_actual.get("tipo", "Otro"))
-                if tipo_actual not in tipos:
-                    tipos.append(tipo_actual)
-
-                plato_tipo_editado = st.selectbox(
-                    "Tipo",
-                    tipos,
-                    index=tipos.index(tipo_actual),
-                )
-
-                plato_activo_editado = st.checkbox(
-                    "Plato activo",
-                    value=bool(plato_actual.get("activo", True)),
-                )
-
-                guardar_plato = st.form_submit_button(
-                    "Guardar cambios",
-                    type="primary",
-                    use_container_width=True,
-                )
-
-            if guardar_plato:
-                nombre_nuevo = normalizar_nombre(plato_nombre_editado)
-
-                if not nombre_nuevo:
-                    st.error("El nombre no puede quedar vacío.")
+                elif any(
+                    limpio(p.get("nombre")).casefold() == nombre.casefold()
+                    and str(p.get("tipo", "")).casefold() == tipo.casefold()
+                    for p in catalogo
+                ):
+                    st.error("Ese plato ya existe en esa categoría.")
                 else:
                     try:
-                        supabase.table("catalogo_platos").update({
-                            "nombre": nombre_nuevo,
-                            "tipo": plato_tipo_editado,
-                            "activo": bool(plato_activo_editado),
-                        }).eq("id", plato_id).execute()
+                        db.table("catalogo_platos").insert({
+                            "nombre": nombre,
+                            "tipo": tipo,
+                            "activo": True,
+                        }).execute()
+                        registrar_evento("CREAR_PLATO", nombre)
+                        refrescar()
+                        st.success("Plato añadido.")
+                        st.rerun()
+                    except Exception as e:
+                        error_ui(e, "guardar el plato")
 
-                        registrar_evento(
-                            "EDITAR_PLATO",
-                            f"Plato {plato_id}: {nombre_nuevo}",
-                        )
+        catalogo = catalogo_cargar()
 
-                        refrescar_datos()
+        if catalogo:
+            tabla = [{
+                "ID": p.get("id"),
+                "Categoría": p.get("tipo", ""),
+                "Plato": p.get("nombre", ""),
+                "Estado": "Activo" if p.get("activo", True) else "Inactivo",
+            } for p in catalogo]
+
+            st.markdown('<div class="panel">', unsafe_allow_html=True)
+            panel_titulo("Platos registrados", f"{len(catalogo)} productos en el catálogo")
+            st.dataframe(pd.DataFrame(tabla), use_container_width=True, hide_index=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+
+            ids = [p.get("id") for p in catalogo if p.get("id") is not None]
+            st.write("")
+            st.markdown("### Editar plato")
+            pid = st.selectbox(
+                "Selecciona un plato",
+                ids,
+                format_func=lambda x: f"#{x} — " + next(
+                    (str(p.get("nombre", "")) for p in catalogo if str(p.get("id")) == str(x)),
+                    "",
+                ),
+            )
+            p = next(p for p in catalogo if str(p.get("id")) == str(pid))
+
+            with st.form("editar_plato"):
+                nombre = st.text_input("Nombre", value=str(p.get("nombre", "")))
+                tipos = ["Entrada", "Segundo", "Bebida", "Extra", "Otro"]
+                tipo_actual = str(p.get("tipo", "Otro"))
+                if tipo_actual not in tipos:
+                    tipos.append(tipo_actual)
+                tipo = st.selectbox("Categoría", tipos, index=tipos.index(tipo_actual))
+                activo = st.checkbox("Plato activo", value=bool(p.get("activo", True)))
+                actualizar = st.form_submit_button("Guardar cambios", type="primary")
+
+            if actualizar:
+                if not limpio(nombre):
+                    st.error("El nombre no puede estar vacío.")
+                else:
+                    try:
+                        db.table("catalogo_platos").update({
+                            "nombre": limpio(nombre),
+                            "tipo": tipo,
+                            "activo": activo,
+                        }).eq("id", pid).execute()
+                        registrar_evento("EDITAR_PLATO", limpio(nombre))
+                        refrescar()
                         st.success("Plato actualizado.")
                         st.rerun()
-
-                    except Exception as error:
-                        mensaje_error(error, "actualizar el plato")
-
+                    except Exception as e:
+                        error_ui(e, "actualizar el plato")
         else:
-            st.info("El catálogo está vacío. Puedes agregar tu primer plato.")
+            st.info("Tu catálogo está vacío. Agrega tu primer plato arriba.")
 
-    except Exception as error:
-        mensaje_error(error, "gestionar el catálogo")
+    except Exception as e:
+        error_ui(e, "cargar el catálogo")
 
 
 # =========================================================
-# 13. REGISTRO DEL SISTEMA
+# SISTEMA
 # =========================================================
 
 elif pagina == "Sistema":
-    st.title("⚙️ Sistema")
-    st.write("Información de actividad y estado de la aplicación.")
+    banner("Sistema", "Estado de conexión y actividad de la aplicación.")
 
-    st.metric("Versión de la aplicación", VERSION)
+    a, b = st.columns(2)
+    with a:
+        st.markdown('<div class="panel">', unsafe_allow_html=True)
+        panel_titulo("Información")
+        st.write(f"**Aplicación:** Como en Casa Dely")
+        st.write(f"**Versión:** {VERSION}")
+        st.write("**Base de datos:** Supabase")
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    if st.button("Comprobar conexión con Supabase"):
-        try:
-            supabase.table("pedidos").select("id").limit(1).execute()
-            st.success("Conexión con Supabase correcta.")
-        except Exception as error:
-            mensaje_error(error, "comprobar la conexión")
+    with b:
+        st.markdown('<div class="panel">', unsafe_allow_html=True)
+        panel_titulo("Conexión")
+        if st.button("Comprobar conexión", type="primary"):
+            try:
+                db.table("pedidos").select("id").limit(1).execute()
+                st.success("Conexión con Supabase correcta.")
+            except Exception as e:
+                error_ui(e, "comprobar la conexión")
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    st.subheader("Actividad reciente")
+    st.write("")
+    st.markdown("### Registro de actividad")
 
     try:
-        eventos = leer_tabla("registro_sistema")
-
-        eventos.sort(
-            key=lambda e: str(e.get("fecha") or ""),
-            reverse=True,
-        )
+        eventos = leer("registro_sistema")
+        eventos.sort(key=lambda x: str(x.get("fecha") or ""), reverse=True)
 
         if eventos:
             st.dataframe(
@@ -1687,20 +1404,19 @@ elif pagina == "Sistema":
                 use_container_width=True,
                 hide_index=True,
             )
-            exportaciones(eventos[:200], "registro_sistema")
+            exportar(eventos[:200], "registro_sistema")
         else:
-            st.info("Todavía no hay eventos registrados.")
-
-    except Exception as error:
-        mensaje_error(error, "leer el registro del sistema")
+            st.info("Todavía no hay actividad registrada.")
+    except Exception as e:
+        error_ui(e, "leer el registro del sistema")
 
 
 # =========================================================
-# 14. PIE DE PÁGINA
+# PIE
 # =========================================================
 
-st.divider()
-
-st.caption(
-    f"Como en Casa Dely · Sistema de pedidos y ventas · Versión {VERSION}"
+st.markdown(
+    "<div style='text-align:center;padding:24px 0 4px;color:#97897D;"
+    "font-size:.8rem'>🍗 Como en Casa Dely · Hecho para gestionar mejor tu negocio</div>",
+    unsafe_allow_html=True,
 )
