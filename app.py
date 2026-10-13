@@ -18,7 +18,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-VERSION = "5.0.0"
+VERSION = "5.1.0"
 
 # =========================================================
 # DISEÑO VISUAL
@@ -29,16 +29,18 @@ st.markdown("""
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
 
 :root {
-    --fondo: #F7F4EF;
+    --fondo: #F6F2EC;
     --blanco: #FFFFFF;
-    --cafe: #5A3928;
-    --cafe-oscuro: #38251C;
+    --cafe: #65432F;
+    --cafe-oscuro: #352219;
     --terracota: #B87552;
+    --terracota-claro: #F4E5DA;
     --arena: #E9D9C6;
     --texto: #382D26;
-    --suave: #8C8178;
+    --suave: #897D73;
     --verde: #547A61;
-    --borde: #EAE3DA;
+    --borde: #E8DED3;
+    --sombra: 0 5px 20px rgba(56,37,28,.055);
 }
 
 html, body, [class*="css"] {
@@ -51,7 +53,7 @@ html, body, [class*="css"] {
 }
 
 [data-testid="stHeader"] {
-    background: rgba(247,244,239,0.95);
+    background: rgba(246,242,236,.96);
 }
 
 [data-testid="stSidebar"] {
@@ -108,18 +110,20 @@ h3 {
 }
 
 .block-container {
-    max-width: 1500px;
-    padding-top: 2rem;
+    max-width: 1550px;
+    padding-top: 1.7rem;
     padding-bottom: 3rem;
 }
 
+/* ENCABEZADO PRINCIPAL */
+
 .marca {
-    background: linear-gradient(115deg, #38251C 0%, #684832 60%, #9D6D4B 100%);
-    border-radius: 20px;
-    padding: 25px 30px;
+    background: linear-gradient(115deg, #352219 0%, #65432F 58%, #AD7957 100%);
+    border-radius: 22px;
+    padding: 29px 32px;
     margin-bottom: 25px;
     color: #FFF8F0;
-    box-shadow: 0 8px 24px rgba(56,37,28,.12);
+    box-shadow: 0 10px 28px rgba(56,37,28,.13);
     position: relative;
     overflow: hidden;
 }
@@ -127,75 +131,109 @@ h3 {
 .marca:after {
     content: "✦";
     position: absolute;
-    right: 34px;
-    top: -28px;
-    font-size: 130px;
+    right: 35px;
+    top: -42px;
+    font-size: 155px;
     color: rgba(255,255,255,.07);
+    pointer-events: none;
 }
 
 .marca h1 {
     color: #FFF8F0 !important;
-    font-size: 2rem !important;
-    margin: 0 0 5px 0;
+    font-size: 2.15rem !important;
+    margin: 0 0 7px 0;
+    position: relative;
+    z-index: 1;
 }
 
 .marca p {
     color: #E8D7C7 !important;
     margin: 0;
     font-size: .95rem;
+    position: relative;
+    z-index: 1;
 }
 
 .etiqueta {
     display: inline-block;
-    padding: 5px 10px;
+    padding: 5px 11px;
     border-radius: 30px;
     background: rgba(255,255,255,.13);
     color: #FFF8F0;
-    font-size: .75rem;
+    font-size: .72rem;
     margin-bottom: 12px;
-    letter-spacing: .5px;
+    letter-spacing: .8px;
+    font-weight: 600;
+    position: relative;
+    z-index: 1;
 }
 
+/* TARJETAS DE RESUMEN */
+
 .tarjeta {
-    background: #FFFFFF;
+    background: linear-gradient(145deg, #FFFFFF 0%, #FFFCF8 100%);
     border: 1px solid var(--borde);
-    border-radius: 17px;
+    border-radius: 18px;
     padding: 20px;
-    min-height: 140px;
-    box-shadow: 0 3px 12px rgba(56,37,28,.035);
+    min-height: 155px;
+    box-shadow: var(--sombra);
+    transition: transform .2s ease, box-shadow .2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.tarjeta:after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--terracota), #D8B69C);
 }
 
 .tarjeta .icono {
-    font-size: 1.5rem;
-    margin-bottom: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 43px;
+    height: 43px;
+    background: var(--terracota-claro);
+    border-radius: 13px;
+    font-size: 1.35rem;
+    margin-bottom: 13px;
 }
 
 .tarjeta .titulo {
-    font-size: .85rem;
+    font-size: .75rem;
     color: var(--suave);
     margin-bottom: 7px;
-    font-weight: 600;
+    font-weight: 700;
+    letter-spacing: .45px;
 }
 
 .tarjeta .valor {
     color: var(--cafe-oscuro);
-    font-size: 1.8rem;
+    font-size: clamp(1.25rem, 2vw, 1.85rem);
     font-weight: 700;
     line-height: 1.25;
+    overflow-wrap: anywhere;
 }
 
 .tarjeta .detalle {
     color: var(--suave);
-    font-size: .78rem;
-    margin-top: 7px;
+    font-size: .77rem;
+    margin-top: 8px;
 }
+
+/* PANELES */
 
 .panel {
     background: #FFFFFF;
     border: 1px solid var(--borde);
-    border-radius: 17px;
-    padding: 22px;
-    box-shadow: 0 3px 12px rgba(56,37,28,.035);
+    border-radius: 18px;
+    padding: 23px;
+    box-shadow: var(--sombra);
 }
 
 .panel-titulo {
@@ -203,21 +241,46 @@ h3 {
     color: var(--cafe-oscuro);
     font-size: 1.25rem;
     font-weight: 700;
-    margin-bottom: 4px;
+    margin-bottom: 5px;
 }
 
 .panel-subtitulo {
     color: var(--suave);
-    font-size: .84rem;
+    font-size: .83rem;
     margin-bottom: 17px;
 }
+
+.seccion-titulo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--cafe-oscuro);
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin: 8px 0 15px;
+}
+
+.seccion-titulo span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--terracota-claro);
+    border-radius: 11px;
+    width: 38px;
+    height: 38px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1.1rem;
+}
+
+/* MÉTRICAS DE STREAMLIT */
 
 div[data-testid="stMetric"] {
     background: white;
     border: 1px solid var(--borde);
     border-radius: 16px;
     padding: 18px 20px;
-    box-shadow: 0 3px 12px rgba(56,37,28,.035);
+    box-shadow: var(--sombra);
 }
 
 [data-testid="stMetricLabel"] {
@@ -234,12 +297,14 @@ div[data-testid="stMetric"] {
     font-size: .8rem;
 }
 
+/* BOTONES */
+
 div.stButton > button,
 div.stDownloadButton > button {
-    border-radius: 10px;
-    min-height: 42px;
+    border-radius: 11px;
+    min-height: 43px;
     font-weight: 600;
-    border-color: var(--borde);
+    border: 1px solid var(--borde);
     transition: all .2s ease;
 }
 
@@ -260,6 +325,8 @@ div.stButton > button[kind="primary"]:hover {
     background: var(--cafe-oscuro);
     color: white;
 }
+
+/* FORMULARIOS Y TABLAS */
 
 div[data-testid="stForm"] {
     background: white;
@@ -297,23 +364,75 @@ a {
     color: var(--terracota);
 }
 
+/* AJUSTES PARA CELULARES */
+
 @media (max-width: 768px) {
     .block-container {
         padding: 1rem .8rem 2rem .8rem;
     }
+
     .marca {
-        padding: 20px;
-        border-radius: 15px;
+        padding: 21px;
+        border-radius: 16px;
     }
+
     .marca h1 {
-        font-size: 1.65rem !important;
+        font-size: 1.6rem !important;
     }
+
+    .marca p {
+        font-size: .86rem;
+        max-width: 90%;
+    }
+
+    .marca:after {
+        right: 5px;
+        font-size: 100px;
+    }
+
     .tarjeta {
         padding: 14px;
-        min-height: 125px;
+        min-height: 135px;
+        border-radius: 14px;
     }
+
+    .tarjeta .icono {
+        width: 36px;
+        height: 36px;
+        font-size: 1.1rem;
+        border-radius: 10px;
+        margin-bottom: 10px;
+    }
+
+    .tarjeta .titulo {
+        font-size: .68rem;
+    }
+
     .tarjeta .valor {
-        font-size: 1.4rem;
+        font-size: 1.25rem;
+    }
+
+    .tarjeta .detalle {
+        font-size: .72rem;
+    }
+
+    .panel {
+        padding: 15px;
+        border-radius: 15px;
+    }
+
+    .panel-titulo {
+        font-size: 1.12rem;
+    }
+
+    div[data-testid="stMetric"] {
+        padding: 13px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
     }
 }
 </style>
@@ -347,7 +466,7 @@ except Exception as e:
 
 
 # =========================================================
-# FUNCIONES
+# FUNCIONES GENERALES
 # =========================================================
 
 def error_ui(e, accion):
@@ -403,7 +522,10 @@ def limpio(valor):
 
 def fecha_segura(valor):
     try:
-        return pd.to_datetime(valor, errors="coerce").date()
+        resultado = pd.to_datetime(valor, errors="coerce")
+        if pd.isna(resultado):
+            return None
+        return resultado.date()
     except Exception:
         return None
 
@@ -499,7 +621,8 @@ def exportar(datos, nombre):
 
 def banner(titulo, subtitulo):
     st.markdown(
-        f'<div class="marca"><div class="etiqueta">COMO EN CASA DELY · ADMINISTRACIÓN</div>'
+        f'<div class="marca">'
+        f'<div class="etiqueta">COMO EN CASA DELY · ADMINISTRACIÓN</div>'
         f'<h1>{titulo}</h1><p>{subtitulo}</p></div>',
         unsafe_allow_html=True,
     )
@@ -507,7 +630,8 @@ def banner(titulo, subtitulo):
 
 def tarjeta(icono, titulo, valor, detalle=""):
     st.markdown(
-        f'<div class="tarjeta"><div class="icono">{icono}</div>'
+        f'<div class="tarjeta">'
+        f'<div class="icono">{icono}</div>'
         f'<div class="titulo">{titulo}</div>'
         f'<div class="valor">{valor}</div>'
         f'<div class="detalle">{detalle}</div></div>',
@@ -519,6 +643,13 @@ def panel_titulo(titulo, subtitulo=""):
     st.markdown(
         f'<div class="panel-titulo">{titulo}</div>'
         f'<div class="panel-subtitulo">{subtitulo}</div>',
+        unsafe_allow_html=True,
+    )
+
+
+def titulo_seccion(icono, titulo):
+    st.markdown(
+        f'<div class="seccion-titulo"><span>{icono}</span>{titulo}</div>',
         unsafe_allow_html=True,
     )
 
@@ -548,7 +679,7 @@ if PASSWORD and not st.session_state.autenticado:
 
 
 # =========================================================
-# NAVEGACIÓN
+# NAVEGACIÓN IZQUIERDA: SE CONSERVA
 # =========================================================
 
 with st.sidebar:
@@ -593,96 +724,134 @@ with st.sidebar:
 
 
 # =========================================================
-# INICIO / DASHBOARD
+# INICIO / DASHBOARD MEJORADO
 # =========================================================
 
 if pagina == "Inicio":
+    hoy = date.today()
+    nombre_meses = [
+        "enero", "febrero", "marzo", "abril", "mayo", "junio",
+        "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+    ]
+
     banner(
         "Resumen de tu negocio",
-        "Todo lo importante de Como en Casa Dely, de un vistazo.",
+        "Controla tus ventas, pedidos y clientes desde un solo lugar.",
+    )
+
+    st.caption(
+        f"📅 {hoy.day} de {nombre_meses[hoy.month - 1].capitalize()} de {hoy.year}"
     )
 
     try:
         pedidos = pedidos_cargar()
         empresas = empresas_cargar()
 
-        hoy = date.today()
-        mes_actual = hoy.month
-        anio_actual = hoy.year
-
         pedidos_hoy = [
-            p for p in pedidos if fecha_segura(p.get("fecha")) == hoy
+            p for p in pedidos
+            if fecha_segura(p.get("fecha")) == hoy
         ]
 
         pedidos_mes = [
             p for p in pedidos
             if fecha_segura(p.get("fecha"))
-            and fecha_segura(p.get("fecha")).month == mes_actual
-            and fecha_segura(p.get("fecha")).year == anio_actual
+            and fecha_segura(p.get("fecha")).month == hoy.month
+            and fecha_segura(p.get("fecha")).year == hoy.year
         ]
 
         venta_hoy = sum(float(p.get("total") or 0) for p in pedidos_hoy)
         venta_mes = sum(float(p.get("total") or 0) for p in pedidos_mes)
         menus_hoy = sum(int(p.get("cantidad_menus") or 0) for p in pedidos_hoy)
+        menus_mes = sum(int(p.get("cantidad_menus") or 0) for p in pedidos_mes)
         activas = sum(1 for e in empresas if e.get("activo", True))
 
-        st.markdown("### ✨ Hoy en tu negocio")
-        a, b, c, d = st.columns(4)
+        # Indicadores principales
+        titulo_seccion("✦", "Resumen de hoy")
+
+        a, b, c, d = st.columns(4, gap="medium")
 
         with a:
-            tarjeta("💰", "VENTAS DE HOY", dinero(venta_hoy),
-                    f"{len(pedidos_hoy)} pedidos registrados")
+            tarjeta(
+                "💰", "VENTAS DE HOY", dinero(venta_hoy),
+                f"{len(pedidos_hoy)} pedidos registrados",
+            )
+
         with b:
-            tarjeta("🍱", "MENÚS VENDIDOS", f"{menus_hoy:,}",
-                    "Unidades de hoy")
+            tarjeta(
+                "🍱", "MENÚS VENDIDOS", f"{menus_hoy:,}",
+                "Unidades registradas hoy",
+            )
+
         with c:
-            tarjeta("📈", "VENTAS DEL MES", dinero(venta_mes),
-                    hoy.strftime("%B %Y").capitalize())
+            tarjeta(
+                "📈", "VENTAS DEL MES", dinero(venta_mes),
+                f"{menus_mes:,} menús en el mes",
+            )
+
         with d:
-            tarjeta("🏢", "EMPRESAS ACTIVAS", str(activas),
-                    "Clientes empresariales")
+            tarjeta(
+                "🏢", "EMPRESAS ACTIVAS", str(activas),
+                "Clientes empresariales",
+            )
 
         st.write("")
-        izquierda, derecha = st.columns([1.6, 1])
+
+        # Gráfico y clasificación de empresas
+        izquierda, derecha = st.columns([1.65, 1], gap="large")
 
         with izquierda:
             st.markdown('<div class="panel">', unsafe_allow_html=True)
-            panel_titulo("📊 Evolución de ventas", "Ingresos diarios de los últimos 14 días")
+            panel_titulo(
+                "📊 Evolución de ventas",
+                "Ingresos diarios de los últimos 14 días",
+            )
 
-            desde = hoy - timedelta(days=13)
+            desde_grafico = hoy - timedelta(days=13)
             por_dia = {}
 
             for p in pedidos:
                 f = fecha_segura(p.get("fecha"))
-                if f and desde <= f <= hoy:
-                    clave = f.strftime("%d %b")
-                    por_dia[clave] = por_dia.get(clave, 0) + float(p.get("total") or 0)
+                if f and desde_grafico <= f <= hoy:
+                    por_dia[f] = por_dia.get(f, 0) + float(p.get("total") or 0)
 
-            fechas = [desde + timedelta(days=i) for i in range(14)]
-            datos_grafico = []
+            fechas_grafico = [
+                desde_grafico + timedelta(days=i)
+                for i in range(14)
+            ]
 
-            for f in fechas:
-                clave = f.strftime("%d %b")
-                datos_grafico.append({
-                    "Día": clave,
-                    "Ventas": por_dia.get(clave, 0),
-                })
+            datos_grafico = pd.DataFrame([
+                {
+                    "Día": f.strftime("%d/%m"),
+                    "Ventas (S/)": por_dia.get(f, 0),
+                }
+                for f in fechas_grafico
+            ])
 
             st.line_chart(
-                pd.DataFrame(datos_grafico).set_index("Día"),
+                datos_grafico.set_index("Día"),
                 use_container_width=True,
+            )
+
+            total_periodo = sum(por_dia.values())
+            st.caption(
+                f"Total del periodo mostrado: **{dinero(total_periodo)}**"
             )
             st.markdown('</div>', unsafe_allow_html=True)
 
         with derecha:
             st.markdown('<div class="panel">', unsafe_allow_html=True)
-            panel_titulo("🏆 Empresas principales", "Según las ventas de este mes")
+            panel_titulo(
+                "🏆 Empresas principales",
+                "Clasificación por ventas del mes actual",
+            )
 
             ventas_empresa = {}
+
             for p in pedidos_mes:
-                nombre = limpio(p.get("empresa")) or "Sin empresa"
+                nombre = limpio(p.get("empresa")) or "Particular"
                 ventas_empresa[nombre] = (
-                    ventas_empresa.get(nombre, 0) + float(p.get("total") or 0)
+                    ventas_empresa.get(nombre, 0)
+                    + float(p.get("total") or 0)
                 )
 
             top = sorted(
@@ -692,58 +861,138 @@ if pagina == "Inicio":
             )[:5]
 
             if top:
+                mayor = max(valor for _, valor in top) or 1
+
                 for i, (nombre, valor) in enumerate(top, 1):
                     st.markdown(
-                        f"**{i}. {nombre}**  \n"
-                        f"<span style='color:#B87552;font-size:1.1rem;font-weight:700'>"
-                        f"{dinero(valor)}</span>",
+                        f"<div style='margin:12px 0 5px'>"
+                        f"<div style='display:flex;justify-content:space-between;"
+                        f"gap:8px;align-items:center'>"
+                        f"<span style='font-weight:600;color:#382D26'>"
+                        f"{i}. {nombre}</span>"
+                        f"<span style='font-weight:700;color:#9A6041;white-space:nowrap'>"
+                        f"{dinero(valor)}</span></div>"
+                        f"<div style='height:7px;background:#F0E7DE;"
+                        f"border-radius:20px;margin-top:8px;overflow:hidden'>"
+                        f"<div style='height:7px;width:{valor / mayor * 100:.1f}%;"
+                        f"background:linear-gradient(90deg,#B87552,#D5A483);"
+                        f"border-radius:20px'></div></div></div>",
                         unsafe_allow_html=True,
                     )
-                    st.divider()
             else:
-                st.info("Todavía no hay ventas este mes.")
+                st.info("Todavía no hay ventas registradas este mes.")
+
             st.markdown('</div>', unsafe_allow_html=True)
 
         st.write("")
-        st.markdown('<div class="panel">', unsafe_allow_html=True)
-        panel_titulo("🧾 Pedidos recientes", "Los últimos movimientos de tu negocio")
 
-        if pedidos:
-            filas = []
-            for p in pedidos[:8]:
-                filas.append({
-                    "N.º": p.get("id", ""),
-                    "Fecha": p.get("fecha", ""),
-                    "Cliente": p.get("cliente", ""),
-                    "Empresa": p.get("empresa", "") or "Particular",
-                    "Menús": p.get("cantidad_menus", 0),
-                    "Total": dinero(p.get("total", 0)),
-                })
+        # Resumen adicional
+        titulo_seccion("🧾", "Actividad reciente")
 
-            st.dataframe(
-                pd.DataFrame(filas),
-                use_container_width=True,
-                hide_index=True,
+        panel_izq, panel_der = st.columns([1.55, 1], gap="large")
+
+        with panel_izq:
+            st.markdown('<div class="panel">', unsafe_allow_html=True)
+            panel_titulo(
+                "Últimos pedidos",
+                "Los movimientos más recientes de tu negocio",
             )
-        else:
-            st.info("Tu actividad aparecerá aquí cuando registres el primer pedido.")
 
-        st.markdown('</div>', unsafe_allow_html=True)
+            if pedidos:
+                filas = []
+
+                for p in pedidos[:8]:
+                    filas.append({
+                        "N.º": p.get("id", ""),
+                        "Fecha": p.get("fecha", ""),
+                        "Cliente": p.get("cliente", ""),
+                        "Empresa": p.get("empresa", "") or "Particular",
+                        "Menús": p.get("cantidad_menus", 0),
+                        "Total": dinero(p.get("total", 0)),
+                    })
+
+                st.dataframe(
+                    pd.DataFrame(filas),
+                    use_container_width=True,
+                    hide_index=True,
+                )
+
+                if st.button("Ver todos los pedidos →", use_container_width=True):
+                    st.session_state.pagina = "Pedidos"
+                    st.rerun()
+            else:
+                st.info(
+                    "Tu actividad aparecerá aquí cuando registres "
+                    "el primer pedido."
+                )
+
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        with panel_der:
+            st.markdown('<div class="panel">', unsafe_allow_html=True)
+            panel_titulo(
+                "📌 Resumen rápido",
+                "Datos generales del negocio",
+            )
+
+            st.markdown(
+                f"<div style='padding:12px 0;border-bottom:1px solid #EAE3DA'>"
+                f"<div style='color:#897D73;font-size:.83rem'>Pedidos de hoy</div>"
+                f"<div style='font-size:1.5rem;font-weight:700;color:#352219'>"
+                f"{len(pedidos_hoy)}</div></div>",
+                unsafe_allow_html=True,
+            )
+
+            st.markdown(
+                f"<div style='padding:12px 0;border-bottom:1px solid #EAE3DA'>"
+                f"<div style='color:#897D73;font-size:.83rem'>Pedidos del mes</div>"
+                f"<div style='font-size:1.5rem;font-weight:700;color:#352219'>"
+                f"{len(pedidos_mes)}</div></div>",
+                unsafe_allow_html=True,
+            )
+
+            st.markdown(
+                f"<div style='padding:12px 0'>"
+                f"<div style='color:#897D73;font-size:.83rem'>"
+                f"Promedio por pedido de hoy</div>"
+                f"<div style='font-size:1.5rem;font-weight:700;color:#352219'>"
+                f"{dinero(venta_hoy / len(pedidos_hoy) if pedidos_hoy else 0)}"
+                f"</div></div>",
+                unsafe_allow_html=True,
+            )
+
+            st.markdown('</div>', unsafe_allow_html=True)
 
         st.write("")
-        st.markdown("### ⚡ Accesos rápidos")
-        x, y, z = st.columns(3)
+
+        # Accesos rápidos
+        titulo_seccion("⚡", "Accesos rápidos")
+        st.caption("Entra directamente a las funciones que más utilizas.")
+
+        x, y, z = st.columns(3, gap="medium")
 
         with x:
-            if st.button("＋ Registrar pedido", use_container_width=True):
+            if st.button(
+                "＋  Registrar pedido",
+                type="primary",
+                use_container_width=True,
+            ):
                 st.session_state.pagina = "Registrar pedido"
                 st.rerun()
+
         with y:
-            if st.button("▦ Ver todos los pedidos", use_container_width=True):
+            if st.button(
+                "▦  Consultar pedidos",
+                use_container_width=True,
+            ):
                 st.session_state.pagina = "Pedidos"
                 st.rerun()
+
         with z:
-            if st.button("＋ Agregar empresa", use_container_width=True):
+            if st.button(
+                "＋  Gestionar empresas",
+                use_container_width=True,
+            ):
                 st.session_state.pagina = "Empresas"
                 st.rerun()
 
@@ -785,7 +1034,9 @@ elif pagina == "Registrar pedido":
                 direccion = st.text_input("Dirección de entrega", key="direccion_pedido")
 
             with c2:
-                fecha_pedido = st.date_input("Fecha del pedido", value=date.today(), key="fecha_pedido")
+                fecha_pedido = st.date_input(
+                    "Fecha del pedido", value=date.today(), key="fecha_pedido"
+                )
                 precio = st.number_input(
                     "Precio por menú (S/)",
                     min_value=0.0,
@@ -850,6 +1101,7 @@ elif pagina == "Registrar pedido":
                         raise RuntimeError("No se recibió el ID del pedido.")
 
                     detalles = []
+
                     for tipo, plato in [
                         ("Entrada", entrada),
                         ("Segundo", segundo),
@@ -890,7 +1142,7 @@ elif pagina == "Registrar pedido":
 
 
 # =========================================================
-# PEDIDOS: HISTORIAL, EDICIÓN Y ELIMINACIÓN
+# PEDIDOS
 # =========================================================
 
 elif pagina == "Pedidos":
@@ -906,9 +1158,11 @@ elif pagina == "Pedidos":
             a, b = st.columns(2)
 
             with a:
-                desde = st.date_input("Desde", date.today() - timedelta(days=30))
+                desde = st.date_input(
+                    "Desde", date.today() - timedelta(days=30), key="pedidos_desde"
+                )
             with b:
-                hasta = st.date_input("Hasta", date.today())
+                hasta = st.date_input("Hasta", date.today(), key="pedidos_hasta")
 
             if desde > hasta:
                 st.error("La fecha inicial no puede ser posterior a la final.")
@@ -933,6 +1187,7 @@ elif pagina == "Pedidos":
                 filtrados.append(p)
 
             filas = []
+
             for p in filtrados:
                 direccion, notas = direccion_y_notas(p.get("observaciones", ""))
                 filas.append({
@@ -948,8 +1203,12 @@ elif pagina == "Pedidos":
                 })
 
             st.markdown('<div class="panel">', unsafe_allow_html=True)
-            panel_titulo("Historial", f"{len(filtrados)} pedidos encontrados")
-            st.dataframe(pd.DataFrame(filas), use_container_width=True, hide_index=True)
+            panel_titulo("Historial de pedidos", f"{len(filtrados)} pedidos encontrados")
+            st.dataframe(
+                pd.DataFrame(filas),
+                use_container_width=True,
+                hide_index=True,
+            )
             exportar(filas, "pedidos")
             st.markdown('</div>', unsafe_allow_html=True)
 
@@ -957,23 +1216,37 @@ elif pagina == "Pedidos":
 
             if ids:
                 st.write("")
-                st.markdown("### Administrar pedido")
+                titulo_seccion("✏️", "Administrar pedido")
+
                 pid = st.selectbox(
                     "Selecciona un pedido",
                     ids,
                     format_func=lambda x: f"Pedido #{x} — " + next(
-                        (str(p.get("cliente", "")) for p in filtrados if str(p.get("id")) == str(x)),
+                        (
+                            str(p.get("cliente", ""))
+                            for p in filtrados
+                            if str(p.get("id")) == str(x)
+                        ),
                         "",
                     ),
                 )
-                p = next(p for p in filtrados if str(p.get("id")) == str(pid))
-                direccion_actual, notas_actuales = direccion_y_notas(p.get("observaciones", ""))
 
-                with st.expander("✏️ Editar datos"):
+                p = next(p for p in filtrados if str(p.get("id")) == str(pid))
+                direccion_actual, notas_actuales = direccion_y_notas(
+                    p.get("observaciones", "")
+                )
+
+                with st.expander("✏️ Editar datos del pedido"):
                     with st.form("editar_pedido"):
-                        cliente = st.text_input("Cliente", value=str(p.get("cliente", "")))
-                        empresa = st.text_input("Empresa", value=str(p.get("empresa", "")))
-                        direccion = st.text_input("Dirección", value=direccion_actual)
+                        cliente = st.text_input(
+                            "Cliente", value=str(p.get("cliente", ""))
+                        )
+                        empresa = st.text_input(
+                            "Empresa", value=str(p.get("empresa", ""))
+                        )
+                        direccion = st.text_input(
+                            "Dirección", value=direccion_actual
+                        )
                         fecha_actual = fecha_segura(p.get("fecha")) or date.today()
                         fecha_pedido = st.date_input("Fecha", value=fecha_actual)
                         precio = st.number_input(
@@ -988,8 +1261,12 @@ elif pagina == "Pedidos":
                             max_value=10000,
                             value=max(1, int(p.get("cantidad_menus") or 1)),
                         )
-                        notas = st.text_area("Observaciones", value=notas_actuales)
-                        actualizar = st.form_submit_button("Guardar cambios", type="primary")
+                        notas = st.text_area(
+                            "Observaciones", value=notas_actuales
+                        )
+                        actualizar = st.form_submit_button(
+                            "Guardar cambios", type="primary"
+                        )
 
                     if actualizar:
                         if not limpio(cliente):
@@ -1005,10 +1282,14 @@ elif pagina == "Pedidos":
                                     "precio_menu": float(precio),
                                     "cantidad_menus": int(cantidad),
                                     "total": round(float(precio) * int(cantidad), 2),
-                                    "observaciones": observaciones_finales(direccion, notas),
+                                    "observaciones": observaciones_finales(
+                                        direccion, notas
+                                    ),
                                 }).eq("id", pid).execute()
 
-                                registrar_evento("EDITAR_PEDIDO", f"Pedido {pid}")
+                                registrar_evento(
+                                    "EDITAR_PEDIDO", f"Pedido {pid}"
+                                )
                                 refrescar()
                                 st.success("Pedido actualizado.")
                                 st.rerun()
@@ -1016,14 +1297,28 @@ elif pagina == "Pedidos":
                                 error_ui(e, "actualizar el pedido")
 
                 with st.expander("🗑️ Eliminar pedido"):
-                    st.warning("Se eliminará el pedido y sus detalles. Esta acción no se puede deshacer.")
-                    confirmar = st.checkbox("Confirmo que quiero eliminarlo", key=f"confirmar_{pid}")
+                    st.warning(
+                        "Se eliminará el pedido y sus detalles. "
+                        "Esta acción no se puede deshacer."
+                    )
+                    confirmar = st.checkbox(
+                        "Confirmo que quiero eliminarlo",
+                        key=f"confirmar_{pid}",
+                    )
 
-                    if st.button("Eliminar pedido", disabled=not confirmar, type="primary"):
+                    if st.button(
+                        "Eliminar pedido",
+                        disabled=not confirmar,
+                        type="primary",
+                    ):
                         try:
-                            db.table("detalle_pedido").delete().eq("pedido_id", pid).execute()
+                            db.table("detalle_pedido").delete().eq(
+                                "pedido_id", pid
+                            ).execute()
                             db.table("pedidos").delete().eq("id", pid).execute()
-                            registrar_evento("ELIMINAR_PEDIDO", f"Pedido {pid}", "AVISO")
+                            registrar_evento(
+                                "ELIMINAR_PEDIDO", f"Pedido {pid}", "AVISO"
+                            )
                             refrescar()
                             st.success("Pedido eliminado.")
                             st.rerun()
@@ -1088,36 +1383,48 @@ elif pagina == "Estadísticas":
             z.metric("Menús vendidos", menus)
 
             st.write("")
-            izq, der = st.columns(2)
+            izq, der = st.columns(2, gap="large")
 
             with izq:
                 st.markdown('<div class="panel">', unsafe_allow_html=True)
-                panel_titulo("Ventas por empresa")
+                panel_titulo("Ventas por empresa", "Comparación dentro del periodo")
+
                 por_empresa = {}
 
                 for p in datos:
                     nombre = limpio(p.get("empresa")) or "Particular"
-                    por_empresa[nombre] = por_empresa.get(nombre, 0) + float(p.get("total") or 0)
+                    por_empresa[nombre] = (
+                        por_empresa.get(nombre, 0) + float(p.get("total") or 0)
+                    )
 
                 if por_empresa:
                     df = pd.DataFrame([
                         {"Empresa": k, "Ventas": v}
-                        for k, v in sorted(por_empresa.items(), key=lambda x: x[1], reverse=True)
+                        for k, v in sorted(
+                            por_empresa.items(),
+                            key=lambda x: x[1],
+                            reverse=True,
+                        )
                     ])
                     st.bar_chart(df.set_index("Empresa"))
                 else:
                     st.info("Sin datos.")
+
                 st.markdown('</div>', unsafe_allow_html=True)
 
             with der:
                 st.markdown('<div class="panel">', unsafe_allow_html=True)
-                panel_titulo("Ventas por día")
+                panel_titulo("Ventas por día", "Ingresos dentro del periodo")
+
                 por_dia = {}
 
                 for p in datos:
                     f = fecha_segura(p.get("fecha"))
                     if f:
-                        por_dia[f.isoformat()] = por_dia.get(f.isoformat(), 0) + float(p.get("total") or 0)
+                        por_dia[f.isoformat()] = (
+                            por_dia.get(f.isoformat(), 0)
+                            + float(p.get("total") or 0)
+                        )
 
                 if por_dia:
                     df = pd.DataFrame([
@@ -1127,6 +1434,7 @@ elif pagina == "Estadísticas":
                     st.line_chart(df.set_index("Fecha"))
                 else:
                     st.info("Sin datos.")
+
                 st.markdown('</div>', unsafe_allow_html=True)
 
             st.write("")
@@ -1153,14 +1461,19 @@ elif pagina == "Empresas":
                 telefono = st.text_input("Teléfono")
                 direccion = st.text_input("Dirección")
                 notas = st.text_area("Observaciones")
-                guardar = st.form_submit_button("Guardar empresa", type="primary")
+                guardar = st.form_submit_button(
+                    "Guardar empresa", type="primary"
+                )
 
             if guardar:
                 nombre = limpio(nombre)
 
                 if not nombre:
                     st.error("Escribe el nombre de la empresa.")
-                elif any(limpio(e.get("nombre")).casefold() == nombre.casefold() for e in empresas):
+                elif any(
+                    limpio(e.get("nombre")).casefold() == nombre.casefold()
+                    for e in empresas
+                ):
                     st.error("Ya existe una empresa con ese nombre.")
                 else:
                     try:
@@ -1192,39 +1505,69 @@ elif pagina == "Empresas":
             } for e in empresas]
 
             st.markdown('<div class="panel">', unsafe_allow_html=True)
-            panel_titulo("Directorio de empresas", f"{len(empresas)} empresas registradas")
-            st.dataframe(pd.DataFrame(tabla), use_container_width=True, hide_index=True)
+            panel_titulo(
+                "Directorio de empresas",
+                f"{len(empresas)} empresas registradas",
+            )
+            st.dataframe(
+                pd.DataFrame(tabla),
+                use_container_width=True,
+                hide_index=True,
+            )
             exportar(tabla, "empresas")
             st.markdown('</div>', unsafe_allow_html=True)
 
-            ids = [e.get("id") for e in empresas if e.get("id") is not None]
+            ids = [
+                e.get("id") for e in empresas
+                if e.get("id") is not None
+            ]
 
             st.write("")
-            st.markdown("### Editar empresa")
+            titulo_seccion("✏️", "Editar empresa")
+
             eid = st.selectbox(
                 "Selecciona una empresa",
                 ids,
                 format_func=lambda x: f"#{x} — " + next(
-                    (str(e.get("nombre", "")) for e in empresas if str(e.get("id")) == str(x)),
+                    (
+                        str(e.get("nombre", ""))
+                        for e in empresas
+                        if str(e.get("id")) == str(x)
+                    ),
                     "",
                 ),
             )
-            e = next(e for e in empresas if str(e.get("id")) == str(eid))
+            e = next(
+                e for e in empresas if str(e.get("id")) == str(eid)
+            )
 
             with st.form("editar_empresa"):
                 nombre = st.text_input("Nombre", value=str(e.get("nombre", "")))
-                contacto = st.text_input("Contacto", value=str(e.get("contacto", "")))
-                telefono = st.text_input("Teléfono", value=str(e.get("telefono", "")))
-                direccion = st.text_input("Dirección", value=str(e.get("direccion", "")))
-                notas = st.text_area("Observaciones", value=str(e.get("observaciones", "")))
-                activo = st.checkbox("Empresa activa", value=bool(e.get("activo", True)))
-                actualizar = st.form_submit_button("Guardar cambios", type="primary")
+                contacto = st.text_input(
+                    "Contacto", value=str(e.get("contacto", ""))
+                )
+                telefono = st.text_input(
+                    "Teléfono", value=str(e.get("telefono", ""))
+                )
+                direccion = st.text_input(
+                    "Dirección", value=str(e.get("direccion", ""))
+                )
+                notas = st.text_area(
+                    "Observaciones", value=str(e.get("observaciones", ""))
+                )
+                activo = st.checkbox(
+                    "Empresa activa", value=bool(e.get("activo", True))
+                )
+                actualizar = st.form_submit_button(
+                    "Guardar cambios", type="primary"
+                )
 
             if actualizar:
                 nombre_nuevo = limpio(nombre)
                 duplicada = any(
                     str(otra.get("id")) != str(eid)
-                    and limpio(otra.get("nombre")).casefold() == nombre_nuevo.casefold()
+                    and limpio(otra.get("nombre")).casefold()
+                    == nombre_nuevo.casefold()
                     for otra in empresas
                 )
 
@@ -1267,7 +1610,10 @@ elif pagina == "Empresas":
 # =========================================================
 
 elif pagina == "Catálogo":
-    banner("Catálogo de platos", "Organiza tus entradas, segundos, bebidas y adicionales.")
+    banner(
+        "Catálogo de platos",
+        "Organiza tus entradas, segundos, bebidas y adicionales.",
+    )
 
     try:
         catalogo = catalogo_cargar()
@@ -1275,8 +1621,13 @@ elif pagina == "Catálogo":
         with st.expander("＋ Agregar plato", expanded=not bool(catalogo)):
             with st.form("crear_plato"):
                 nombre = st.text_input("Nombre del plato *")
-                tipo = st.selectbox("Categoría", ["Entrada", "Segundo", "Bebida", "Extra", "Otro"])
-                guardar = st.form_submit_button("Guardar plato", type="primary")
+                tipo = st.selectbox(
+                    "Categoría",
+                    ["Entrada", "Segundo", "Bebida", "Extra", "Otro"],
+                )
+                guardar = st.form_submit_button(
+                    "Guardar plato", type="primary"
+                )
 
             if guardar:
                 nombre = limpio(nombre)
@@ -1314,32 +1665,62 @@ elif pagina == "Catálogo":
             } for p in catalogo]
 
             st.markdown('<div class="panel">', unsafe_allow_html=True)
-            panel_titulo("Platos registrados", f"{len(catalogo)} productos en el catálogo")
-            st.dataframe(pd.DataFrame(tabla), use_container_width=True, hide_index=True)
+            panel_titulo(
+                "Platos registrados",
+                f"{len(catalogo)} productos en el catálogo",
+            )
+            st.dataframe(
+                pd.DataFrame(tabla),
+                use_container_width=True,
+                hide_index=True,
+            )
             st.markdown('</div>', unsafe_allow_html=True)
 
-            ids = [p.get("id") for p in catalogo if p.get("id") is not None]
+            ids = [
+                p.get("id") for p in catalogo
+                if p.get("id") is not None
+            ]
+
             st.write("")
-            st.markdown("### Editar plato")
+            titulo_seccion("✏️", "Editar plato")
+
             pid = st.selectbox(
                 "Selecciona un plato",
                 ids,
                 format_func=lambda x: f"#{x} — " + next(
-                    (str(p.get("nombre", "")) for p in catalogo if str(p.get("id")) == str(x)),
+                    (
+                        str(p.get("nombre", ""))
+                        for p in catalogo
+                        if str(p.get("id")) == str(x)
+                    ),
                     "",
                 ),
             )
-            p = next(p for p in catalogo if str(p.get("id")) == str(pid))
+            p = next(
+                p for p in catalogo if str(p.get("id")) == str(pid)
+            )
 
             with st.form("editar_plato"):
-                nombre = st.text_input("Nombre", value=str(p.get("nombre", "")))
+                nombre = st.text_input(
+                    "Nombre", value=str(p.get("nombre", ""))
+                )
                 tipos = ["Entrada", "Segundo", "Bebida", "Extra", "Otro"]
                 tipo_actual = str(p.get("tipo", "Otro"))
+
                 if tipo_actual not in tipos:
                     tipos.append(tipo_actual)
-                tipo = st.selectbox("Categoría", tipos, index=tipos.index(tipo_actual))
-                activo = st.checkbox("Plato activo", value=bool(p.get("activo", True)))
-                actualizar = st.form_submit_button("Guardar cambios", type="primary")
+
+                tipo = st.selectbox(
+                    "Categoría",
+                    tipos,
+                    index=tipos.index(tipo_actual),
+                )
+                activo = st.checkbox(
+                    "Plato activo", value=bool(p.get("activo", True))
+                )
+                actualizar = st.form_submit_button(
+                    "Guardar cambios", type="primary"
+                )
 
             if actualizar:
                 if not limpio(nombre):
@@ -1369,12 +1750,16 @@ elif pagina == "Catálogo":
 # =========================================================
 
 elif pagina == "Sistema":
-    banner("Sistema", "Estado de conexión y actividad de la aplicación.")
+    banner(
+        "Sistema",
+        "Estado de conexión y actividad de la aplicación.",
+    )
 
-    a, b = st.columns(2)
+    a, b = st.columns(2, gap="large")
+
     with a:
         st.markdown('<div class="panel">', unsafe_allow_html=True)
-        panel_titulo("Información")
+        panel_titulo("⚙️ Información de la aplicación")
         st.write(f"**Aplicación:** Como en Casa Dely")
         st.write(f"**Versión:** {VERSION}")
         st.write("**Base de datos:** Supabase")
@@ -1382,7 +1767,7 @@ elif pagina == "Sistema":
 
     with b:
         st.markdown('<div class="panel">', unsafe_allow_html=True)
-        panel_titulo("Conexión")
+        panel_titulo("🔌 Conexión")
         if st.button("Comprobar conexión", type="primary"):
             try:
                 db.table("pedidos").select("id").limit(1).execute()
@@ -1392,11 +1777,14 @@ elif pagina == "Sistema":
         st.markdown('</div>', unsafe_allow_html=True)
 
     st.write("")
-    st.markdown("### Registro de actividad")
+    titulo_seccion("📋", "Registro de actividad")
 
     try:
         eventos = leer("registro_sistema")
-        eventos.sort(key=lambda x: str(x.get("fecha") or ""), reverse=True)
+        eventos.sort(
+            key=lambda x: str(x.get("fecha") or ""),
+            reverse=True,
+        )
 
         if eventos:
             st.dataframe(
@@ -1412,11 +1800,13 @@ elif pagina == "Sistema":
 
 
 # =========================================================
-# PIE
+# PIE DE PÁGINA
 # =========================================================
 
 st.markdown(
-    "<div style='text-align:center;padding:24px 0 4px;color:#97897D;"
-    "font-size:.8rem'>🍗 Como en Casa Dely · Hecho para gestionar mejor tu negocio</div>",
+    "<div style='text-align:center;padding:28px 0 4px;color:#97897D;"
+    "font-size:.8rem'>"
+    "🍗 Como en Casa Dely · Hecho para gestionar mejor tu negocio"
+    "</div>",
     unsafe_allow_html=True,
 )
