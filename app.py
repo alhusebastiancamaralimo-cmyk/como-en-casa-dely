@@ -3,6 +3,7 @@ import streamlit as st
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from supabase import create_client
+from urllib.parse import urlparse
 
 # =====================================================
 # CONFIGURACIÓN
@@ -317,12 +318,26 @@ def mostrar_marca():
 
 def mostrar_error(titulo, error):
     st.error(titulo)
+
     with st.expander("🔎 Ver detalles técnicos", expanded=True):
-        st.code(f"{type(error).__name__}: {error}", language="text")
-        st.caption(
-            "Antes de compartir este error, revisa que no contenga "
-            "contraseñas, claves API ni tokens."
+        st.code(
+            f"{type(error).__name__}: {error}",
+            language="text"
         )
+        st.caption(
+            "No compartas contraseñas, claves API ni tokens."
+        )
+
+
+def consultar(nombre_operacion, funcion):
+    """Ejecuta una consulta y añade el nombre de la operación al error."""
+    try:
+        return funcion()
+    except Exception as error:
+        raise RuntimeError(
+            f"Operación fallida: {nombre_operacion}\n"
+            f"Error original: {type(error).__name__}: {error}"
+        ) from error
 
 
 # =====================================================
@@ -375,22 +390,41 @@ if not st.session_state.autenticado:
 
 
 # =====================================================
-# SUPABASE
+# CONEXIÓN Y DIAGNÓSTICO DE SUPABASE
 # =====================================================
 
 @st.cache_resource
 def conectar_supabase():
-    return create_client(
-        st.secrets["SUPABASE_URL"],
-        st.secrets["SUPABASE_KEY"]
-    )
+    url = str(st.secrets["SUPABASE_URL"]).strip().rstrip("/")
+    clave_api = str(st.secrets["SUPABASE_KEY"]).strip()
+
+    partes = urlparse(url)
+
+    if (
+        partes.scheme != "https"
+        or not partes.hostname
+        or not partes.hostname.endswith(".supabase.co")
+        or partes.path not in ("", "/")
+        or partes.query
+        or partes.fragment
+    ):
+        raise ValueError(
+            "SUPABASE_URL no tiene el formato esperado. "
+            "Debe ser la URL base del proyecto, por ejemplo "
+            "https://identificador.supabase.co, sin rutas adicionales."
+        )
+
+    if not clave_api:
+        raise ValueError("SUPABASE_KEY está vacía.")
+
+    return create_client(url, clave_api)
 
 
 try:
     db = conectar_supabase()
 except Exception as error:
     st.title("Como en Casa Dely")
-    mostrar_error("No se pudo conectar con Supabase.", error)
+    mostrar_error("No se pudo inicializar Supabase.", error)
     st.stop()
 
 
@@ -410,19 +444,22 @@ def guardar_pedido(
 ):
     total = round(float(precio) * int(cantidad), 2)
 
-    respuesta = db.table("pedidos").insert({
-        "fecha": fecha_pedido.isoformat(),
-        "cliente": cliente.strip(),
-        "empresa": empresa.strip() or None,
-        "precio_menu": float(precio),
-        "cantidad_menus": int(cantidad),
-        "total": total,
-        "observaciones": observaciones.strip() or None
-    }).execute()
+    respuesta = consultar(
+        "insertar el pedido en la tabla pedidos",
+        lambda: db.table("pedidos").insert({
+            "fecha": fecha_pedido.isoformat(),
+            "cliente": cliente.strip(),
+            "empresa": empresa.strip() or None,
+            "precio_menu": float(precio),
+            "cantidad_menus": int(cantidad),
+            "total": total,
+            "observaciones": observaciones.strip() or None
+        }).execute()
+    )
 
     if not respuesta.data:
         raise RuntimeError(
-            "Supabase no devolvió el pedido creado."
+            "La tabla pedidos no devolvió el registro creado."
         )
 
     pedido_id = respuesta.data[0]["id"]
@@ -435,6 +472,7 @@ def guardar_pedido(
     ]:
         for plato in texto.split(","):
             plato = plato.strip()
+
             if plato:
                 detalles.append({
                     "pedido_id": pedido_id,
@@ -444,25 +482,34 @@ def guardar_pedido(
                 })
 
     if detalles:
-        db.table("detalle_pedido").insert(detalles).execute()
+        consultar(
+            "insertar detalles en detalle_pedido",
+            lambda: db.table("detalle_pedido").insert(
+                detalles
+            ).execute()
+        )
 
     return pedido_id, total
 
 
 def obtener_pedidos(limite=500):
-    respuesta = (
-        db.table("pedidos")
-        .select("*")
-        .order("fecha", desc=True)
-        .order("id", desc=True)
-        .limit(limite)
-        .execute()
+    respuesta = consultar(
+        "consultar la tabla pedidos",
+        lambda: (
+            db.table("pedidos")
+            .select("*")
+            .order("fecha", desc=True)
+            .order("id", desc=True)
+            .limit(limite)
+            .execute()
+        )
     )
+
     return respuesta.data or []
 
 
 # =====================================================
-# MENÚ LATERAL CON BOTONES
+# MENÚ LATERAL
 # =====================================================
 
 with st.sidebar:
@@ -567,6 +614,7 @@ if st.session_state.pagina == "Inicio":
         with a:
             st.markdown("#### ＋ Registrar una venta")
             st.write("Agrega un pedido y calcula su total.")
+
             if st.button(
                 "Nuevo pedido →",
                 key="nuevo_inicio",
@@ -579,6 +627,7 @@ if st.session_state.pagina == "Inicio":
         with b:
             st.markdown("#### ▤ Historial")
             st.write("Consulta los pedidos guardados.")
+
             if st.button(
                 "Ver pedidos →",
                 key="ver_inicio",
@@ -597,6 +646,7 @@ if st.session_state.pagina == "Inicio":
                 "id", "fecha", "cliente",
                 "cantidad_menus", "total"
             ]
+
             datos = [
                 {k: p.get(k) for k in columnas}
                 for p in pedidos[:5]
@@ -625,7 +675,7 @@ if st.session_state.pagina == "Inicio":
             )
 
     except Exception as error:
-        mostrar_error("No se pudo cargar el inicio.", error)
+        mostrar_error("Falló la carga del inicio.", error)
 
 
 # =====================================================
@@ -663,6 +713,7 @@ elif st.session_state.pagina == "Registrar pedido":
                 value=hoy_peru(),
                 format="DD/MM/YYYY"
             )
+
             precio = st.number_input(
                 "Precio por menú (S/)",
                 min_value=10.0,
@@ -671,6 +722,7 @@ elif st.session_state.pagina == "Registrar pedido":
                 step=0.5,
                 format="%.2f"
             )
+
             cantidad = st.number_input(
                 "Cantidad de menús",
                 min_value=1,
@@ -747,9 +799,9 @@ elif st.session_state.pagina == "Registrar pedido":
             except Exception as error:
                 mostrar_error("No se pudo completar el registro.", error)
                 st.warning(
-                    "Si falló el guardado de los detalles, "
-                    "el pedido principal podría haberse guardado. "
-                    "Comprueba el historial antes de volver a intentarlo."
+                    "Antes de volver a intentarlo, comprueba el historial. "
+                    "El pedido principal podría haberse guardado aunque "
+                    "fallara el registro de sus detalles."
                 )
 
 
@@ -759,7 +811,9 @@ elif st.session_state.pagina == "Registrar pedido":
 
 elif st.session_state.pagina == "Pedidos":
     st.title("Historial de pedidos")
-    st.write("Todos tus pedidos registrados, organizados en un solo lugar.")
+    st.write(
+        "Todos tus pedidos registrados, organizados en un solo lugar."
+    )
 
     try:
         pedidos = obtener_pedidos()
@@ -776,6 +830,7 @@ elif st.session_state.pagina == "Pedidos":
 
             if filtro.strip():
                 texto = filtro.strip().casefold()
+
                 filtrados = [
                     p for p in pedidos
                     if texto in str(p.get("cliente") or "").casefold()
@@ -846,9 +901,11 @@ elif st.session_state.pagina == "Estadísticas":
         ventas = sum(
             float(p.get("total") or 0) for p in pedidos_hoy
         )
+
         menus = sum(
             int(p.get("cantidad_menus") or 0) for p in pedidos_hoy
         )
+
         promedio = ventas / len(pedidos_hoy) if pedidos_hoy else 0
 
         a, b = st.columns(2)
