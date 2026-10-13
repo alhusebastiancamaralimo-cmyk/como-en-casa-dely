@@ -1,4 +1,3 @@
-```python
 import re
 from datetime import date, datetime
 from urllib.parse import urlparse
@@ -1744,4 +1743,3 @@ st.caption(
     f"{NOMBRE_APP} · Versión {VERSION_APP} · "
     "Gestión de pedidos y ventas"
 )
-```
